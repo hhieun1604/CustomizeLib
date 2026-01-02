@@ -1,24 +1,23 @@
-﻿using CustomizeLib.MelonLoader;
+﻿using BepInEx;
+using BepInEx.Unity.IL2CPP;
+using CustomizeLib.BepInEx;
 using HarmonyLib;
-using Il2Cpp;
-using Il2CppTMPro;
-using MelonLoader;
-using Microsoft.VisualBasic;
-using System.Xml.Linq;
+using Il2CppInterop.Runtime.Injection;
+using System.Reflection;
 using UnityEngine;
-using static UnityEngine.RuleTile.TilingRuleOutput;
 
-[assembly: MelonInfo(typeof(SolarHypno.MelonLoader.Core), "SolarHypno", "1.0.0", "Salmon", null)]
-[assembly: MelonGame("LanPiaoPiao", "PlantsVsZombiesRH")]
-
-namespace SolarHypno.MelonLoader
+namespace SolarHypno.BepInEx
 {
-    public class Core : MelonMod
+    [BepInPlugin("salmon.solarhypno", "SolarHypno", "1.0")]
+    public class Core : BasePlugin//960
     {
-        public override void OnInitializeMelon()
+        public override void Load()
         {
+            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+            ClassInjector.RegisterTypeInIl2Cpp<SolarHypno>();
+            ClassInjector.RegisterTypeInIl2Cpp<UltimateJumpSun>();
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-            var ab = CustomCore.GetAssetBundle(MelonAssembly.Assembly, "solarhypno");
+            var ab = CustomCore.GetAssetBundle(Assembly.GetExecutingAssembly(), "solarhypno");
             CustomCore.RegisterCustomPlant<SolarCabbage, SolarHypno>((int)SolarHypno.PlantID, ab.GetAsset<GameObject>("SolarHypnoPrefab"),
                 ab.GetAsset<GameObject>("SolarHypnoPreview"), new List<(int, int)>
                 {
@@ -82,11 +81,9 @@ namespace SolarHypno.MelonLoader
             CustomCore.AddFusion((int)PlantType.UltimateCabbage, (int)SolarHypno.PlantID, (int)PlantType.Cabbagepult);
             CustomCore.AddFusion((int)PlantType.UltimateCabbage, (int)PlantType.Cabbagepult, (int)SolarHypno.PlantID);
             CustomCore.AddUltimatePlant(SolarHypno.PlantID);
-            MelonLogger.Msg(Tools.GetAssembly().FullName);
         }
     }
 
-    [RegisterTypeInIl2Cpp]
     public class SolarHypno : MonoBehaviour
     {
         public static PlantType PlantID = (PlantType)1954;
@@ -127,7 +124,6 @@ namespace SolarHypno.MelonLoader
         }
     }
 
-    [RegisterTypeInIl2Cpp]
     public class UltimateJumpSun : MonoBehaviour
     {
         public Board board;
@@ -315,7 +311,7 @@ namespace SolarHypno.MelonLoader
         [HarmonyPrefix]
         public static bool Prefix(Zombie __instance)
         {
-            if (__instance != null && __instance.theAttackTarget != null && __instance.theAttackTarget.TryGetComponent<Plant>(out var plant) && 
+            if (__instance != null && __instance.theAttackTarget != null && __instance.theAttackTarget.TryGetComponent<Plant>(out var plant) &&
                 plant != null && plant.thePlantType == SolarHypno.PlantID && plant.attributeCount > 0)
             {
                 plant.attributeCount--;
