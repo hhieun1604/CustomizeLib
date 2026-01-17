@@ -4,6 +4,7 @@ using CustomizeLib.MelonLoader;
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.Injection;
 using MelonLoader;
+using Microsoft.VisualBasic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -1099,6 +1100,27 @@ namespace CustomizeLib.MelonLoader
         /// <param name="action">移动逻辑</param>
         public static void RegisterCustomBulletMovingWay(int id, [NotNull] Action<Bullet> action) => CustomBulletMovingWay.Add(id, action);
 
+        /// <summary>
+        /// 注册自定义樱桃爆炸
+        /// </summary>
+        /// <param name="id">类型</param>
+        /// <param name="prefab">樱桃爆炸预制体</param>
+        public static void RegisterCustomCherry(CherryBombType id, [NotNull] GameObject prefab) => RegisterCustomCherry<BombCherry>(id, prefab);
+
+        /// <summary>
+        /// 注册自定义樱桃爆炸
+        /// </summary>
+        /// <typeparam name="T">自定义樱桃爆炸类型</typeparam>
+        /// <param name="id">类型</param>
+        /// <param name="prefab">樱桃爆炸预制体</param>
+        public static void RegisterCustomCherry<T>(CherryBombType id, [NotNull] GameObject prefab) where T : MonoBehaviour
+        {
+            if (!ClassInjector.IsTypeRegisteredInIl2Cpp<T>())
+                ClassInjector.RegisterTypeInIl2Cpp<T>();
+            prefab.AddComponent<T>();
+            CustomCherrys.Add(id, prefab);
+        }
+
         public static void RegisterCustomEndlessSave(Type type, List<String> name) =>
             CustomEndlessSave.Add(type, name);
 
@@ -1107,13 +1129,15 @@ namespace CustomizeLib.MelonLoader
         /// </summary>
         /// <param name="plantType">底层植物（原有）</param>
         /// <param name="cardType">卡槽植物（点击上去的）</param>
+        /// <param name="canClick">是否能执行</param>
         /// <param name="action">执行的事件</param>
-        public static void RegisterCustomClickCardOnPlantEvent([NotNull] PlantType plantType, [NotNull] PlantType cardType, [NotNull] Action<Plant> action, [NotNull] CustomClickCardOnPlant onPlant)
+        /// <param name="onPlant">执行时的配置</param>
+        public static void RegisterCustomClickCardOnPlantEvent([NotNull] PlantType plantType, [NotNull] PlantType cardType, [NotNull] Action<Plant> action, [NotNull] Func<Plant, bool> canClick = null, [NotNull] CustomClickCardOnPlant onPlant = default)
         {
             if (CustomClickCardOnPlantEvents.ContainsKey((plantType, cardType)))
-                CustomClickCardOnPlantEvents[(plantType, cardType)].Add((action, onPlant));
+                CustomClickCardOnPlantEvents[(plantType, cardType)].Add((action, canClick, onPlant));
             else
-                CustomClickCardOnPlantEvents.Add((plantType, cardType), new() { (action, onPlant) });
+                CustomClickCardOnPlantEvents.Add((plantType, cardType), new() { (action, canClick, onPlant) });
         }
 
         /// <summary>
@@ -1151,7 +1175,7 @@ namespace CustomizeLib.MelonLoader
         /// </summary>
         /// <param name="baseType">底植物</param>
         /// <param name="newType">种植植物</param>
-        /// <param name="action">融合时间</param>
+        /// <param name="action">融合事件</param>
         public static void RegisterCustomOnMixEvent(PlantType baseType, PlantType newType, Action<Plant> action) =>
             RegisterCustomOnMixEvent(baseType, newType, new List<Action<Plant>> { action });
 
@@ -1337,7 +1361,7 @@ namespace CustomizeLib.MelonLoader
         /// <summary>
         /// 自定义种植植物在另一植物上事件（当前位置的植物的类型，鼠标上的植物类型），Action参数：当前位置的植物
         /// </summary>
-        public static Dictionary<(PlantType, PlantType), List<(Action<Plant>, CustomClickCardOnPlant)>> CustomClickCardOnPlantEvents { get; set; } = [];
+        public static Dictionary<(PlantType, PlantType), List<(Action<Plant>, Func<Plant, bool>, CustomClickCardOnPlant)>> CustomClickCardOnPlantEvents { get; set; } = [];
 
         /// <summary>
         /// 存卡片检查的列表，用于管理Packet显示
@@ -1373,6 +1397,11 @@ namespace CustomizeLib.MelonLoader
         /// 自定义植物融合事件 (底植物,融合植物)-触发事件(融合后植物)
         /// </summary>
         public static Dictionary<(PlantType, PlantType), List<Action<Plant>>> CustomOnMixEvent { get; set; } = [];
+
+        /// <summary>
+        /// 自定义樱桃爆炸
+        /// </summary>
+        public static Dictionary<CherryBombType, GameObject> CustomCherrys { get; set; } = [];
 
         /*/// <summary>
         /// 注册时缓存皮肤，加载时注册

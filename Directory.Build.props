@@ -2,7 +2,9 @@
 <Project>
   <PropertyGroup>
     <!-- 定义共享的游戏路径 -->
-    <ModsPath>F:\PVZRH_Melon\Mods</ModsPath>
     <PluginsPath>F:\PVZRH_Bep\BepInEx\plugins</PluginsPath>
+    <ModsPath>F:\PVZRH_Melon\Mods</ModsPath>
+	<BepResPath>F:\vsrepos\Customizelib\res\BepInEx</BepResPath>
+	<MelonResPath>F:\vsrepos\Customizelib\res\MelonLoader</MelonResPath>
   </PropertyGroup>
 </Project>

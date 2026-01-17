@@ -1,21 +1,22 @@
-﻿using CustomizeLib.MelonLoader;
+﻿using BepInEx;
+using BepInEx.Unity.IL2CPP;
+using CustomizeLib.BepInEx;
 using HarmonyLib;
-using Il2Cpp;
-using MelonLoader;
-using Microsoft.VisualBasic;
+using Il2CppInterop.Runtime.Injection;
+using System.Reflection;
 using UnityEngine;
-using UnityEngine.UIElements;
 
-[assembly: MelonInfo(typeof(UltimateWinterCabbagecannon.MelonLoader.Core), "UltimateWinterCabbagecannon", "1.0.0", "Salmon", null)]
-[assembly: MelonGame("LanPiaoPiao", "PlantsVsZombiesRH")]
-
-namespace UltimateWinterCabbagecannon.MelonLoader
+namespace UltimateWinterCabbagecannon.BepInEx
 {
-    public class Core : MelonMod
+    [BepInPlugin("salmon.ultimatewintercabbagecannon", "UltimateWinterCabbagecannon", "1.0")]
+    public class Core : BasePlugin
     {
-        public override void OnInitializeMelon()
+        public override void Load()
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
+            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+            ClassInjector.RegisterTypeInIl2Cpp<UltimateWinterCabbagecannon>();
+            ClassInjector.RegisterTypeInIl2Cpp<SubCabbage>();
             var ab = CustomCore.GetAssetBundle(Tools.GetAssembly(), "ultimatewintercabbagecannon");
             CustomCore.RegisterCustomBullet<Bullet_cabbage>(UltimateWinterCabbagecannon.BulletID, ab.GetAsset<GameObject>("Bullet_iceDoomCabbage"));
             CustomCore.RegisterCustomPlant<CabbageCannon, UltimateWinterCabbagecannon>((int)UltimateWinterCabbagecannon.PlantID, ab.GetAsset<GameObject>("UltimateWinterCabbagecannonPrefab"),
@@ -61,7 +62,6 @@ namespace UltimateWinterCabbagecannon.MelonLoader
         }
     }
 
-    [RegisterTypeInIl2Cpp]
     public class UltimateWinterCabbagecannon : MonoBehaviour
     {
         public static PlantType PlantID = (PlantType)1956;
@@ -124,7 +124,6 @@ namespace UltimateWinterCabbagecannon.MelonLoader
         }
     }
 
-    [RegisterTypeInIl2Cpp]
     public class SubCabbage : MonoBehaviour
     {
         public int damage = 300;

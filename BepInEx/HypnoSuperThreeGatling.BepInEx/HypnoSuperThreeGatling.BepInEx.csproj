@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -80,6 +80,6 @@
 		</Reference>
 	</ItemGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="COPY &quot;$(TargetPath)&quot; &quot;..\..\res\BepInEx&quot;" />
+		<Exec Command="COPY &quot;$(TargetPath)&quot; &quot;$(BepResPath)&quot;" />
 	</Target>
 </Project>

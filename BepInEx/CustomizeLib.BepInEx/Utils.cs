@@ -105,9 +105,14 @@ namespace CustomizeLib.BepInEx
     {
         public bool BlockFusion { get; set; } = false;
         public TriggerType Trigger { get; set; } = TriggerType.All;
-        public bool ClearOrigin { get; set; } = true;
+        public bool SaveOrigin { get; set; } = false;
 
-        public CustomClickCardOnPlant() { }
+        public CustomClickCardOnPlant()
+        {
+            BlockFusion = false;
+            Trigger = TriggerType.All;
+            SaveOrigin = false;
+        }
 
         public enum TriggerType
         {

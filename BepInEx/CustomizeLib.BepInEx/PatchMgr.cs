@@ -794,7 +794,8 @@ namespace CustomizeLib.BepInEx
                             {
                                 var mgr = TravelMgr.Instance;
                                 if (!(__instance.board.boardTag.isTravel && mgr.ulockTemp != null && mgr.ulockTemp.Contains(theSeedType) ||
-                                    (mgr.weakUltimates != null && mgr.weakUltimates.Contains(theSeedType))) && !__instance.board.boardTag.enableAllTravelPlant)
+                                    (mgr.weakUltimates != null && mgr.weakUltimates.Contains(theSeedType))) && !__instance.board.boardTag.enableAllTravelPlant &&
+                                    !mgr.curseMode)
                                 {
                                     __result = true;
                                     InGameText.Instance.ShowText("未选取此植物", 3f);
@@ -923,7 +924,8 @@ namespace CustomizeLib.BepInEx
             var array = TravelMgr.Instance.GetData<int[]>("CustomBuffsLevel");
             if (array is null)
                 return;
-            __result = array[index] > 0;
+            if (index < array.Length)
+                __result = array[index] > 0;
         }
 
         [HarmonyPatch(nameof(Lawnf.TravelAdvanced), new Type[] { typeof(int) })]
@@ -939,7 +941,8 @@ namespace CustomizeLib.BepInEx
             var array = TravelMgr.Instance.GetData<int[]>("CustomBuffsLevel");
             if (array is null)
                 return;
-            __result = array[index] > 0;
+            if (index < array.Length)
+                __result = array[index] > 0;
         }
 
         [HarmonyPatch(nameof(Lawnf.TravelUltimate), new Type[] { typeof(UltiBuffs) })]
@@ -955,7 +958,8 @@ namespace CustomizeLib.BepInEx
             var array = TravelMgr.Instance.GetData<int[]>("CustomBuffsLevel");
             if (array is null)
                 return;
-            __result = array[index] > 0;
+            if (index < array.Length)
+                __result = array[index] > 0;
         }
 
         [HarmonyPatch(nameof(Lawnf.TravelUltimate), new Type[] { typeof(int) })]
@@ -987,7 +991,8 @@ namespace CustomizeLib.BepInEx
             var array = TravelMgr.Instance.GetData<int[]>("CustomBuffsLevel");
             if (array is null)
                 return;
-            __result = array[index2];
+            if (index < array.Length)
+                __result = array[index2];
         }
 
         [HarmonyPatch(nameof(Lawnf.TravelDebuff), new Type[] { typeof(int) })]
@@ -1003,7 +1008,8 @@ namespace CustomizeLib.BepInEx
             var array = TravelMgr.Instance.GetData<int[]>("CustomBuffsLevel");
             if (array is null)
                 return;
-            __result = array[index] > 0;
+            if (index < array.Length)
+                __result = array[index] > 0;
         }
 
         [HarmonyPatch(nameof(Lawnf.TravelDebuff), new Type[] { typeof(TravelDebuff) })]
@@ -1019,7 +1025,8 @@ namespace CustomizeLib.BepInEx
             var array = TravelMgr.Instance.GetData<int[]>("CustomBuffsLevel");
             if (array is null)
                 return;
-            __result = array[index] > 0;
+            if (index < array.Length)
+                __result = array[index] > 0;
         }
     }
 
@@ -1396,10 +1403,12 @@ namespace CustomizeLib.BepInEx
                     continue;
                 if (CustomCore.CustomClickCardOnPlantEvents.ContainsKey((item.thePlantType, __instance.thePlantTypeOnMouse)))
                 {
-                    bool block = false, clearOrigin = true;
-                    foreach (var (action, onPlant) in CustomCore.CustomClickCardOnPlantEvents[(item.thePlantType, __instance.thePlantTypeOnMouse)])
+                    bool block = false, clearOrigin = false;
+                    foreach (var (action, can, onPlant) in CustomCore.CustomClickCardOnPlantEvents[(item.thePlantType, __instance.thePlantTypeOnMouse)])
                     {
                         if (executedActions.Contains(action)) // 判断，不然会多执行一次
+                            continue;
+                        if (can != null && !can(item))
                             continue;
                         if (onPlant.Trigger == CustomClickCardOnPlant.TriggerType.CardOnly && __instance.thePlantOnGlove != null)
                             continue;
@@ -1409,8 +1418,8 @@ namespace CustomizeLib.BepInEx
                         executedActions.Add(action);
                         if (onPlant.BlockFusion)
                             block = true;
-                        if (!onPlant.ClearOrigin)
-                            clearOrigin = false;
+                        if (!onPlant.SaveOrigin)
+                            clearOrigin = true;
                         found = true;
                     }
                     if (block)
@@ -1427,22 +1436,39 @@ namespace CustomizeLib.BepInEx
             {
                 if (__instance.theCardOnMouse != null)
                 {
-                    __instance.theCardOnMouse.CD = 0f;
-                    __instance.theCardOnMouse.isPickUp = false;
-                    if (Board.Instance != null)
+                    if (__instance.theCardOnMouse.TryGetComponent<DroppedCard>(out var card) && card != null)
                     {
-                        Board.Instance.UseSun(__instance.theCardOnMouse.theSeedCost);
-
-                        // 高级旅行检查
-                        if (Lawnf.TravelAdvanced(59))
+                        card.usedTimes++;
+                        if (Board.Instance != null)
                         {
-                            Board.Instance.UseSun(Board.Instance.theSun / 2);
+                            Board.Instance.UseSun(card.theSeedCost);
+
+                            // 高级旅行检查
+                            if (Lawnf.TravelAdvanced(59))
+                            {
+                                Board.Instance.UseSun(Board.Instance.theSun / 2);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        __instance.theCardOnMouse.CD = 0f;
+                        __instance.theCardOnMouse.isPickUp = false;
+                        if (Board.Instance != null)
+                        {
+                            Board.Instance.UseSun(__instance.theCardOnMouse.theSeedCost);
+
+                            // 高级旅行检查
+                            if (Lawnf.TravelAdvanced(59))
+                            {
+                                Board.Instance.UseSun(Board.Instance.theSun / 2);
+                            }
                         }
                     }
                 }
                 if (__instance.thePlantOnGlove != null)
                 {
-                    __instance.thePlantOnGlove.Die(Plant.DieReason.ByMix);
+                    __instance.thePlantOnGlove.Die(Plant.DieReason.ByShovel);
                     Glove glove = Glove.Instance;
                     if (glove != null)
                     {
@@ -1830,6 +1856,17 @@ namespace CustomizeLib.BepInEx
                 UnityEngine.Object.Destroy(bucket.gameObject);
             }
         }
+
+        [HarmonyPatch(nameof(Plant.Start))]
+        [HarmonyPostfix]
+        public static void PostStart(Plant __instance)
+        {
+            if (__instance != null && CustomCore.CustomOnMixEvent.ContainsKey((__instance.firstParent, __instance.secondParent)))
+            {
+                foreach (var action in CustomCore.CustomOnMixEvent[(__instance.firstParent, __instance.secondParent)])
+                    action.Invoke(__instance);
+            }
+        }
     }
     /// <summary>
     /// 刷新卡牌贴图
@@ -2090,6 +2127,38 @@ namespace CustomizeLib.BepInEx
             if (CustomCore.CustomUltimatePlants.Contains(plantType))
             {
                 __result = true;
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(nameof(Board.CreateCherryExplode))]
+        [HarmonyPrefix]
+        public static bool PreCreateCherryExplode(Board __instance, ref Vector2 v, ref int theRow,
+            ref CherryBombType bombType, ref int damage, ref PlantType fromType, ref Il2CppSystem.Action<Zombie> action, ref BombCherry __result)
+        {
+            if (CustomCore.CustomCherrys.ContainsKey(bombType) && __instance != null)
+            {
+                var prefab = CustomCore.CustomCherrys[bombType];
+                GameObject explosionObj = Instantiate(
+                    prefab,
+                    v,
+                    Quaternion.identity,
+                    __instance.transform
+                );
+                CreateParticle.SetLayer(prefab, 11);
+                // 获取BombCherry组件
+                BombCherry bombCherry = explosionObj.GetComponent<BombCherry>();
+
+                // 设置爆炸参数
+                bombCherry.explodeDamage = damage;
+                bombCherry.bombRow = theRow;
+                bombCherry.bombType = bombType;
+                bombCherry.zombieAction = action;
+                bombCherry.fromType = fromType;
+
+                GameAPP.PlaySound(40, 0.5f, 1.0f);
+                __result = bombCherry;
                 return false;
             }
             return true;

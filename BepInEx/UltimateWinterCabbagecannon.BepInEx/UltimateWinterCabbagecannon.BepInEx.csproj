@@ -4,20 +4,22 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	<LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="ultimatedoomminigun" />
+    <None Remove="ultimatewintercabbagecannon" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="ultimatedoomminigun" />
+    <EmbeddedResource Include="ultimatewintercabbagecannon" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CustomizeLib.BepInEx\CustomizeLib.BepInEx.csproj" />
   </ItemGroup>
-<ItemGroup>
+
+  <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>..\..\lib\BepInEx\core\0Harmony.dll</HintPath>
     </Reference>
@@ -41,9 +43,6 @@
     </Reference>
     <Reference Include="AssetRipper.Primitives">
       <HintPath>..\..\lib\BepInEx\core\AssetRipper.Primitives.dll</HintPath>
-    </Reference>
-    <Reference Include="AssetRipper.VersionUtilities">
-      <HintPath>..\..\lib\BepInEx\core\AssetRipper.VersionUtilities.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx.Core">
       <HintPath>..\..\lib\BepInEx\core\BepInEx.Core.dll</HintPath>
@@ -372,5 +371,7 @@
   </ItemGroup>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="COPY &quot;$(TargetPath)&quot; &quot;$(BepResPath)&quot;" />
+		<Exec Command="COPY &quot;$(TargetPath)&quot; &quot;$(PluginsPath)&quot;" />
 	</Target>
+
 </Project>

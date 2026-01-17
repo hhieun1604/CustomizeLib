@@ -235,6 +235,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolarHypno.BepInEx", "BepIn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UltimateWinterCabbagecannon.MelonLoader", "MelonLoader\UltimateWinterCabbagecannon.MelonLoader\UltimateWinterCabbagecannon.MelonLoader.csproj", "{50507DE6-7092-423B-897F-1CA3E43C172D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FreezingCherry.MelonLoader", "MelonLoader\FreezingCherry.MelonLoader\FreezingCherry.MelonLoader.csproj", "{C9245846-6EDB-41DC-80F1-371AFC21EF22}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UltimateWinterCabbagecannon.BepInEx", "BepInEx\UltimateWinterCabbagecannon.BepInEx\UltimateWinterCabbagecannon.BepInEx.csproj", "{07F255FA-E7AB-4D2C-8A8C-4ED88404B5AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -689,6 +693,14 @@ Global
 		{50507DE6-7092-423B-897F-1CA3E43C172D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50507DE6-7092-423B-897F-1CA3E43C172D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50507DE6-7092-423B-897F-1CA3E43C172D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9245846-6EDB-41DC-80F1-371AFC21EF22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9245846-6EDB-41DC-80F1-371AFC21EF22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9245846-6EDB-41DC-80F1-371AFC21EF22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9245846-6EDB-41DC-80F1-371AFC21EF22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07F255FA-E7AB-4D2C-8A8C-4ED88404B5AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07F255FA-E7AB-4D2C-8A8C-4ED88404B5AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07F255FA-E7AB-4D2C-8A8C-4ED88404B5AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07F255FA-E7AB-4D2C-8A8C-4ED88404B5AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
