@@ -25,7 +25,7 @@ namespace UltimateWinterMelonCannon.BepInEx
                 {
                     if (z is not null && z.gameObject.TryGetComponent<Zombie>(out var zombie) && !zombie.isMindControlled)
                     {
-                        zombie.TakeDamage(DmgType.IceAll, __instance.Damage * (Lawnf.TravelUltimate(14) ? 3 : 1));
+                        zombie.TakeDamage(DmgType.IceAll, __instance.Damage * (Lawnf.TravelUltimate((UltiBuff)14) ? 3 : 1));
                         zombie.SetFreeze(10);
                         zombie.AddfreezeLevel(400);
                         zombie.SetCold(30);
@@ -65,8 +65,8 @@ namespace UltimateWinterMelonCannon.BepInEx
             CustomCore.TypeMgrExtra.DoubleBoxPlants.Add((PlantType)168);
             CustomCore.AddFusion(915, 168, 28);
             CustomCore.AddPlantAlmanacStrings(168, "冰毁瓜加农炮(168)", "手动发射寒冰毁灭西瓜，范围全屏\n<color=#3D1400>贴图作者：@林秋AutumnLin </color>\n<color=#3D1400>特点：</color><color=red>究极加农炮亚种，使用西瓜投手、玉米投手切换。点击发射60个伤害450的寒冰毁灭西瓜子弹，范围全屏，受击僵尸冻结15s</color>\n<color=#3D1400>融合配方：</color><color=red>究极加农炮+西瓜投手</color>\n<color=#3D1400>词条1：</color><color=red>兵贵神速：装填时间降为10秒</color>\n<color=#3D1400>词条2：</color><color=red>中心爆破：单个子弹伤害提升至1350</color>\n<color=#3D1400>词条3：</color><color=red>瓜里藏刀：每个冰毁瓜子弹对僵尸额外造成5%血量伤害(解锁条件：解锁了词条1、2且场上存在冰毁瓜加农炮)</color>\n<color=#3D1400>词条4：</color><color=red>真正的冰毁瓜：每个冰毁瓜子弹落地时直接生成3600伤害的寒冰毁灭菇爆炸，范围全屏(解锁条件：解锁了词条1、2、3且场上存在冰毁瓜加农炮)</color>\n<color=#3D1400>“包装自己的最有效策略？”冰毁西瓜炮低声说道：“首先要冷静，谦逊……然后，从沉默中醒来——轰！整个世界都会记住你的名字。”</color>");
-            UltimateWinterMelonCannon.Buff1 = CustomCore.RegisterCustomBuff("瓜里藏刀：每个冰毁瓜子弹对僵尸额外造成5%血量伤害", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<UltimateWinterMelonCannon>() && Lawnf.TravelUltimate(14) && Lawnf.TravelUltimate(15), 5400, null, (PlantType)168);
-            UltimateWinterMelonCannon.Buff2 = CustomCore.RegisterCustomBuff("真正的冰毁瓜：每个冰毁瓜子弹落地时直接生成3600伤害的寒冰毁灭菇爆炸，范围全屏", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<UltimateWinterMelonCannon>() && Lawnf.TravelUltimate(14) && Lawnf.TravelUltimate(15) && Lawnf.TravelAdvanced(UltimateWinterMelonCannon.Buff1), 28800, "red", (PlantType)168);
+            UltimateWinterMelonCannon.Buff1 = CustomCore.RegisterCustomBuff("瓜里藏刀：每个冰毁瓜子弹对僵尸额外造成5%血量伤害", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<UltimateWinterMelonCannon>() && Lawnf.TravelUltimate((UltiBuff)14) && Lawnf.TravelUltimate((UltiBuff)15), 5400, null, (PlantType)168);
+            UltimateWinterMelonCannon.Buff2 = CustomCore.RegisterCustomBuff("真正的冰毁瓜：每个冰毁瓜子弹落地时直接生成3600伤害的寒冰毁灭菇爆炸，范围全屏", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<UltimateWinterMelonCannon>() && Lawnf.TravelUltimate((UltiBuff)14) && Lawnf.TravelUltimate((UltiBuff)15) && Lawnf.TravelAdvanced(UltimateWinterMelonCannon.Buff1), 28800, "red", (PlantType)168);
         }
     }
 
@@ -82,7 +82,7 @@ namespace UltimateWinterMelonCannon.BepInEx
         {
             GameAPP.PlaySound(4, 1.0f);
             var RowFromY = Mouse.Instance.GetRowFromY(plant.cannonTarget.x, plant.cannonTarget.y);
-            var bullet = plant.board.GetComponent<CreateBullet>().SetBullet(plant.shoot.transform.position.x, plant.shoot.transform.position.y, RowFromY, (BulletType)BulletId, 14);
+            var bullet = plant.board.GetComponent<CreateBullet>().SetBullet(plant.shoot.transform.position.x, plant.shoot.transform.position.y, RowFromY, (BulletType)BulletId, (BulletMoveWay)14);
             var pos2 = bullet.cannonPos;
             pos2.x = plant.cannonTarget.x;
             pos2.y = plant.cannonTarget.y;
@@ -100,14 +100,14 @@ namespace UltimateWinterMelonCannon.BepInEx
 
         public void Update()
         {
-            if (GameAPP.theGameStatus is 0 && Lawnf.TravelUltimate(15) && plant is not null && plant.attributeCountdown > 10f)
+            if (GameAPP.theGameStatus is 0 && Lawnf.TravelUltimate((UltiBuff)15) && plant is not null && plant.attributeCountdown > 10f)
             {
                 plant.attributeCountdown = 10f;
             }
         }
 
-        public static int Buff1 { get; set; } = -1;
-        public static int Buff2 { get; set; } = -1;
+        public static BuffID Buff1 { get; set; } = -1;
+        public static BuffID Buff2 { get; set; } = -1;
 
         public static int BulletId { get; set; } = 901;
 

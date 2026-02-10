@@ -86,7 +86,7 @@ namespace IceDoomGatlingBepInEx
             Vector3 firePosition = plant.shoot.position;
 
             // 检查旅行模式条件
-            bool isAdvancedMode = Lawnf.TravelAdvanced(3);
+            bool isAdvancedMode = Lawnf.TravelAdvanced((AdvBuff)3);
 
             // 更新射击计数
             plant.doomTimes++;
@@ -101,7 +101,7 @@ namespace IceDoomGatlingBepInEx
                     firePosition.y - 0.2f,
                     plant.thePlantRow,
                     (BulletType)Bullet_iceDoomGatling_doom.Bullet_ID, // 普通子弹ID
-                    0, false);
+                    BulletMoveWay.MoveRight, false);
 
                 // 设置子弹伤害
                 bullet.Damage = plant.attackDamage;
@@ -123,7 +123,7 @@ namespace IceDoomGatlingBepInEx
                 plant.doomTimes = 0;
 
                 // 调整攻击冷却时间
-                if (!Lawnf.TravelAdvanced(2))
+                if (!Lawnf.TravelAdvanced((AdvBuff)2))
                 {
                     plant.thePlantAttackCountDown = 3f;
                 }
@@ -190,7 +190,7 @@ namespace IceDoomGatlingBepInEx
                 zombie.SetCold(10f);
 
                 // 旅行模式37特殊效果
-                if (Lawnf.TravelAdvanced(37))
+                if (Lawnf.TravelAdvanced((AdvBuff)2000))
                 {
                     // 获取僵尸位置
                     if (zombie != null && zombie.axis != null)

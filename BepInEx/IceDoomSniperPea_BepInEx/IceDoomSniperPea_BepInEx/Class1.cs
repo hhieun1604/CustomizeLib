@@ -41,7 +41,6 @@ namespace IceDoomSniperPea.BepInEx
                 ab.GetAsset<GameObject>("IceDoomSniperPeaPreviewSkin"), list, 6f, 0f, 600, 300, 7.5f, 800);
             IceDoomBomb = ab.GetAsset<GameObject>("IceDoomBomb");
             IceDoomBomb.gameObject.AddComponent<IceDoomBomb>();
-            CustomCore.RegisterCustomWeakUltimatePlant((PlantType)IceDoomSniperPea.PlantID);
             CustomCore.AddPlantAlmanacStrings(IceDoomSniperPea.PlantID, "冰毁狙击豌豆(" + IceDoomSniperPea.PlantID + ")",
                 "静寂无声中发射附带炸药的狙击，同时第二发将其引爆，造成范围杀伤效果。\n\n" +
                 "<color=#3D1400>贴图作者：@林秋-AutumnLin</color>\n" +
@@ -52,11 +51,11 @@ namespace IceDoomSniperPea.BepInEx
                 "<color=#3D1400>融合配方：</color><color=red>狙击射手+寒冰菇+毁灭菇</color>\n" +
                 "<color=#3D1400>词条1：</color><color=red>精装炸弹：冰毁炸弹爆炸的伤害x3，冰毁炸弹引爆后会为附近的僵尸挂上冰毁炸弹。2级时，每次引爆都造成寒冰毁灭菇爆炸，引爆时有50%概率触发超级爆头，并附带10%韧性的伤害</color>\n" +
                 "<color=#3D1400>词条2：</color><color=red>夜影暗袭：冰毁狙击射手每11发将锁定场上韧性上限最高的僵尸。每轮攻击有概率触发连狙\n\n" +
-                "<color=#3D1400>远方的僵尸缓缓逼近，声势浩大，所过之处寸草不生，乌鸦吱吱哇哇的叫着，像是在宣告僵尸大军的到来。冰毁狙击豌豆对准了最大的巨人僵尸，一发毙命，随后对其他植物说道“它们不是不可战胜的，我们同仇敌忾，我们团结一心，我们全力以赴，我们会前赴后继的拿下胜利！僵尸并不可怕，可怕的是我们会退缩，会害怕，但是兄弟们，一旦我们在这里畏手畏脚，在这里退缩在这里倒下，他们就会冲进庭院进行杀戮撕咬，为了我们的未来！为了守护的院落！绝不厚退一步！”</color>");
+                "<color=#3D1400>远方的僵尸缓缓逼近，声势浩大，所过之处寸草不生，乌鸦吱吱哇哇的叫着，像是在宣告僵尸大军的到来。冰毁狙击豌豆对准了最大的巨人僵尸，一发毙命，随后对其他植物说道“它们不是不可战胜的，我们同仇敌忾，我们团结一心，我们全力以赴，我们会前赴后继的拿下胜利！僵尸并不可怕，可怕的是我们会退缩，会害怕，但是兄弟们，一旦我们在这里畏手畏脚，在这里退缩在这里倒下，他们就会冲进庭院进行杀戮撕咬，为了我们的未来！为了守护的院落！绝不后退一步！”</color>");
             CustomCore.TypeMgrExtra.IsIcePlant.Add((PlantType)IceDoomSniperPea.PlantID);
             CustomCore.TypeMgrExtra.LevelPlants.Add((PlantType)IceDoomSniperPea.PlantID, CardLevel.Gold);
-            IceDoomSniperPea.buff1 = CustomCore.RegisterCustomBuff("精装炸弹：冰毁炸弹爆炸的伤害x3，冰毁炸弹引爆后会为附近的僵尸挂上冰毁炸弹。2级时，每次引爆都造成寒冰毁灭菇爆炸，引爆时有50%概率触发超级爆头，并附带10%韧性的伤害", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<IceDoomSniperPea>(), 5000, "#000000", (PlantType)IceDoomSniperPea.PlantID, 2, CustomCore.BuffBgType.Night);
-            IceDoomSniperPea.buff2 = CustomCore.RegisterCustomBuff("夜影暗袭：冰毁狙击射手每11发将锁定场上韧性上限最高的僵尸。每轮攻击有概率触发连狙", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<IceDoomSniperPea>(), 5000, "#000000", (PlantType)IceDoomSniperPea.PlantID, bg: CustomCore.BuffBgType.Night);
+            IceDoomSniperPea.buff1 = (AdvBuff)CustomCore.RegisterCustomBuff("精装炸弹：冰毁炸弹爆炸的伤害x3，冰毁炸弹引爆后会为附近的僵尸挂上冰毁炸弹。2级时，每次引爆都造成寒冰毁灭菇爆炸，引爆时有50%概率触发超级爆头，并附带10%韧性的伤害", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<IceDoomSniperPea>(), 5000, "#000000", (PlantType)IceDoomSniperPea.PlantID, 2, BuffBgType.Night);
+            IceDoomSniperPea.buff2 = (AdvBuff)CustomCore.RegisterCustomBuff("夜影暗袭：冰毁狙击射手每11发将锁定场上韧性上限最高的僵尸。每轮攻击有概率触发连狙", BuffType.AdvancedBuff, () => Board.Instance.ObjectExist<IceDoomSniperPea>(), 5000, "#000000", (PlantType)IceDoomSniperPea.PlantID, bg: BuffBgType.Night);
             CustomCore.AddUltimatePlant((PlantType)IceDoomSniperPea.PlantID);
         }
     }
@@ -64,8 +63,8 @@ namespace IceDoomSniperPea.BepInEx
     public class IceDoomSniperPea : MonoBehaviour
     {
         public static int PlantID = 1900;
-        public static int buff1 = -1;
-        public static int buff2 = -1;
+        public static AdvBuff buff1 = (AdvBuff)(-1);
+        public static AdvBuff buff2 = (AdvBuff)(-1);
 
         public void AttackZombie(Zombie zombie, int damage)
         {
@@ -90,7 +89,7 @@ namespace IceDoomSniperPea.BepInEx
                     go.GetComponent<IceDoomBomb>().Bomb(plant.attackCount);
                 }
 
-                ParticleManager.Instance.SetParticle(ParticleType.IceDoomSplat, plant.ac.transform.position, plant.targetZombie.theZombieRow);
+                ParticleManager.Instance.SetParticle(ParticleType.IceDoomSplat, plant.ac.transform.position, plant.targetZombie.theZombieRow, true);
             }
             catch (Exception e)
             {
@@ -273,7 +272,7 @@ namespace IceDoomSniperPea.BepInEx
                     };
                     Board.Instance.CreateCherryExplode(transform.position, zombie.theZombieRow, CherryBombType.IceCharry, dmg, action: action);
                     int totalHealth = zombie.theHealth + zombie.theFirstArmorHealth + zombie.theSecondArmorHealth;
-                    if (Utils.TravelCustomBuffLevel(BuffType.AdvancedBuff, IceDoomSniperPea.buff1) == 2)
+                    if (Utils.TravelCustomBuffLevel(BuffType.AdvancedBuff, (int)IceDoomSniperPea.buff1) == 2)
                     {
                         int damage = zombie.GetDamage((int)(totalHealth * 0.1f) + 1, DmgType.Normal, false);
                         zombie.theHealth -= damage;
@@ -343,7 +342,7 @@ namespace IceDoomSniperPea.BepInEx
 
             board.CreateCherryExplode(gameObject.transform.position, zombie.theZombieRow, CherryBombType.IceCharry, dmg, action: action);
             int totalHealth = zombie.theHealth + zombie.theFirstArmorHealth + zombie.theSecondArmorHealth;
-            if (Utils.TravelCustomBuffLevel(BuffType.AdvancedBuff, IceDoomSniperPea.buff1) == 2)
+            if (Utils.TravelCustomBuffLevel(BuffType.AdvancedBuff, (int)IceDoomSniperPea.buff1) == 2)
             {
                 int damage = zombie.GetDamage((int)(totalHealth * 0.1f) + 1, DmgType.Normal, false);
                 zombie.theHealth -= damage;
@@ -371,7 +370,7 @@ namespace IceDoomSniperPea.BepInEx
                 iceDoom = true;
             }
 
-            if (Utils.TravelCustomBuffLevel(BuffType.AdvancedBuff, IceDoomSniperPea.buff1) == 2)
+            if (Utils.TravelCustomBuffLevel(BuffType.AdvancedBuff, (int)IceDoomSniperPea.buff1) == 2)
             {
                 if (UnityEngine.Random.Range(0, 2) == 0)
                 {

@@ -48,25 +48,26 @@ namespace UltimateCherryTorch.BepInEx
     public class UltimateCherryTorch : MonoBehaviour
     {
         public static PlantType PlantID = (PlantType)1951;
-        public static int Buff1 = -1;
-        public static int Buff2 = -1;
+        public static BuffID Buff1 = -1;
+        public static BuffID Buff2 = -1;
 
         public SuperTorch plant => gameObject.GetComponent<SuperTorch>();
         public Radiation radiation = null;
 
         public void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.gameObject.TryGetComponent<Bullet>(out var bullet) && bullet != null && bullet.torchWood != plant && !bullet.fromZombie)
+            if (collision.gameObject.TryGetComponent<Bullet>(out var bullet) && bullet != null && bullet.torchWood != plant && !bullet.fromEnermy)
             {
                 if (bullet.theBulletType == BulletType.Bullet_doom || bullet.theBulletType == BulletType.Bullet_doom_big ||
                     bullet.theBulletType == BulletType.Bullet_superCherry || bullet.theBulletType == BulletType.Bullet_cherrySquash ||
-                    bullet.theBulletType == BulletType.Bullet_cherryStar || bullet.theBulletType == BulletType.Bullet_pea_doom)
+                    bullet.theBulletType == BulletType.Bullet_cherryStar || bullet.theBulletType == BulletType.Bullet_pea_doom || 
+                    bullet.theBulletType == BulletType.Bullet_doom_big_ulti || bullet.theBulletType == BulletType.Bullet_doom_ulti)
                 {
                     if (bullet.theBulletRow != plant.thePlantRow)
                         return;
                     var moveType = BulletMoveWay.MoveRight;
-                    if (bullet.theMovingWay != (int)BulletMoveWay.Sin && bullet.theMovingWay != (int)BulletMoveWay.Track)
-                        moveType = (BulletMoveWay)bullet.theMovingWay;
+                    if (bullet.MoveWay != BulletMoveWay.Sin && bullet.MoveWay != BulletMoveWay.Track)
+                        moveType = (BulletMoveWay)bullet.MoveWay;
                     var nuclear = CreateBullet.Instance.SetBullet(bullet.transform.position.x, bullet.transform.position.y, bullet.theBulletRow, BulletType.Bullet_nuclear, moveType, false);
                     nuclear.Damage = bullet.Damage * 4;
                     if (Lawnf.TravelAdvanced(Buff1))

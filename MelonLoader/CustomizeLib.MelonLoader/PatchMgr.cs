@@ -312,7 +312,7 @@ namespace CustomizeLib.MelonLoader
                     CustomPlantData newCustomPlantData = new()
                     {
                         ID = (int)plantType,
-                        PlantData = PlantDataLoader.plantDatas[plantType],
+                        PlantData = PlantDataManager.GetPlantData(plantType),
                         Prefab = GameAPP.resourcesManager.plantPrefabs[plantType],
                         Preview = GameAPP.resourcesManager.plantPreviews[plantType]
                     };
@@ -1159,14 +1159,6 @@ namespace CustomizeLib.MelonLoader
         public static void Prefix()
         {
             #region 自动扩容
-            // 扩容plantData
-            if (CustomCore.CustomPlants.Count > 0 && (int)CustomCore.CustomPlants.Keys.Max() + 1 >= PlantDataLoader.plantData.Length)
-            {
-                long size_plantData = (int)CustomCore.CustomPlants.Keys.Max();
-                Il2CppReferenceArray<PlantDataLoader.PlantData_> plantData = new Il2CppReferenceArray<PlantDataLoader.PlantData_>(size_plantData + 1);
-                PlantDataLoader.plantData = plantData;
-            }
-
             // 扩容particlePrefab
             if (CustomCore.CustomParticles.Count > 0 && (int)CustomCore.CustomParticles.Keys.Max() + 1 >= GameAPP.particlePrefab.Length)
             {
@@ -1219,8 +1211,8 @@ namespace CustomizeLib.MelonLoader
                     GameAPP.resourcesManager.allPlants.Add(plant.Key);//注册植物类型
                 if (plant.Value.PlantData is not null)
                 {
-                    PlantDataLoader.plantData[(int)plant.Key] = plant.Value.PlantData;//注册植物数据
-                    PlantDataLoader.plantDatas.Add(plant.Key, plant.Value.PlantData);
+                    PlantDataManager.PlantData_Default[plant.Key] = plant.Value.PlantData;//注册植物数据
+                    PlantDataManager.PlantData_Default.Add(plant.Key, plant.Value.PlantData);
                 }
                 GameAPP.resourcesManager.plantPreviews[plant.Key] = plant.Value.Preview;//注册植物预览
                 GameAPP.resourcesManager.plantPreviews[plant.Key].tag = "Preview";//必修打tag
@@ -1372,7 +1364,7 @@ namespace CustomizeLib.MelonLoader
                             CustomPlantData data = new()
                             {
                                 ID = id,
-                                PlantData = PlantDataLoader.plantDatas[plantType],
+                                PlantData = PlantDataManager.PlantData_Default[plantType],
                                 Prefab = GameAPP.resourcesManager.plantPrefabs[plantType],
                                 Preview = GameAPP.resourcesManager.plantPreviews[plantType]
                             };
@@ -2047,7 +2039,7 @@ namespace CustomizeLib.MelonLoader
                             image.sprite = GameAPP.resourcesManager.plantPreviews[card.Key].GetComponent<SpriteRenderer>().sprite;
                             image.SetNativeSize();
                             // 设置背景价格
-                            TempCard.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = PlantDataLoader.plantDatas[card.Key].field_Public_Int32_1.ToString();
+                            TempCard.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = PlantDataManager.PlantData_Default[card.Key].cost.ToString();
                             //卡片
                             CardUI component = TempCard.transform.GetChild(1).GetComponent<CardUI>();
                             component.gameObject.SetActive(true);
@@ -2062,8 +2054,8 @@ namespace CustomizeLib.MelonLoader
                             //设置数据
                             component.thePlantType = card.Key;
                             component.theSeedType = (int)card.Key;
-                            component.theSeedCost = PlantDataLoader.plantDatas[card.Key].field_Public_Int32_1;
-                            component.fullCD = PlantDataLoader.plantDatas[card.Key].field_Public_Single_2;
+                            component.theSeedCost = PlantDataManager.PlantData_Default[card.Key].cost;
+                            component.fullCD = PlantDataManager.PlantData_Default[card.Key].cd;
                             if (cardsOnSeedBank.Contains(card.Key))
                                 TempCard.transform.GetChild(1).gameObject.SetActive(false);
                             CheckCardState customComponent = TempCard.AddComponent<CheckCardState>();
@@ -2106,7 +2098,7 @@ namespace CustomizeLib.MelonLoader
                             image.sprite = GameAPP.resourcesManager.plantPreviews[card.Key].GetComponent<SpriteRenderer>().sprite;
                             image.SetNativeSize();
                             // 设置背景价格
-                            TempCard.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = PlantDataLoader.plantDatas[card.Key].field_Public_Int32_1.ToString();
+                            TempCard.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = PlantDataManager.PlantData_Default[card.Key].cost.ToString();
                             //卡片
                             CardUI component = TempCard.transform.GetChild(2).GetComponent<CardUI>(); // 主卡
                             component.gameObject.SetActive(true);
@@ -2125,13 +2117,13 @@ namespace CustomizeLib.MelonLoader
                             //设置数据
                             component.thePlantType = card.Key;
                             component.theSeedType = (int)card.Key;
-                            component.theSeedCost = PlantDataLoader.plantDatas[card.Key].field_Public_Int32_1;
-                            component.fullCD = PlantDataLoader.plantDatas[card.Key].field_Public_Single_2;
+                            component.theSeedCost = PlantDataManager.PlantData_Default[card.Key].cost;
+                            component.fullCD = PlantDataManager.PlantData_Default[card.Key].cd;
                             //设置副卡数据
                             component1.thePlantType = card.Key;
                             component1.theSeedType = (int)card.Key;
-                            component1.theSeedCost = PlantDataLoader.plantDatas[card.Key].field_Public_Int32_1 * 2;
-                            component1.fullCD = PlantDataLoader.plantDatas[card.Key].field_Public_Single_2;
+                            component1.theSeedCost = PlantDataManager.PlantData_Default[card.Key].cost * 2;
+                            component1.fullCD = PlantDataManager.PlantData_Default[card.Key].cd;
                             if (cardsOnSeedBankExtra.ContainsKey(card.Key) && cardsOnSeedBankExtra[card.Key].Contains(true))
                                 TempCard.transform.GetChild(1).gameObject.SetActive(false);
                             if (cardsOnSeedBankExtra.ContainsKey(card.Key) && cardsOnSeedBankExtra[card.Key].Contains(false))
@@ -3707,7 +3699,7 @@ namespace CustomizeLib.MelonLoader
             board.theMaxWave = levelData.WaveCount();
             board.cardSelectable = levelData.NeedSelectCard;
             board.theSun = levelData.Sun();
-            board.zombieDamageAdder = levelData.ZombieHealthRate();
+            board.zombieDamageMultiplier = levelData.ZombieHealthRate();
             board.seedPool = levelData.SeedRainPlantTypes().ToIl2CppList();
             levelData.PostBoard(board);
             // 加载并实例化地图

@@ -90,16 +90,16 @@ namespace GarlicSuperGatling.BepInEx
             if ((int)__instance.theBulletType == Bullet_pea_garlic.BulletID)
             {
                 int damage = __instance.Damage + 20 * zombie.poisonLevel;
-                if (Lawnf.TravelUltimate(13))
+                if (Lawnf.TravelUltimate((UltiBuff)13))
                 {
                     zombie.SetPoison();
                     damage = __instance.Damage + 80 * zombie.poisonLevel;
                 }
                 zombie.TakeDamage(DmgType.NormalAll, __instance.Damage + 20 * zombie.poisonLevel);
-                if (!Lawnf.TravelUltimate(13))
+                if (!Lawnf.TravelUltimate((UltiBuff)13))
                     zombie.AddPoisonLevel();
                 int r = UnityEngine.Random.Range(0, 10);
-                if (Lawnf.TravelUltimate(13))
+                if (Lawnf.TravelUltimate((UltiBuff)13))
                     r = UnityEngine.Random.Range(0, 4);
                 if (zombie.poisonTimer > 0 && r == 2)
                 {
@@ -130,7 +130,7 @@ namespace GarlicSuperGatling.BepInEx
                         // 范围伤害判定
                         if (!AoeDamage.InLandAoeRange(component.theStatus)) continue;
                         int damageBomb = __instance.Damage + 40 * component.poisonLevel;
-                        if (Lawnf.TravelUltimate(13))
+                        if (Lawnf.TravelUltimate((UltiBuff)13))
                             damageBomb = __instance.Damage + 400 * component.poisonLevel;
                         // 应用伤害和冰冻效果
                         component.TakeDamage(DmgType.NormalAll, damageBomb);

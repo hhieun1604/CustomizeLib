@@ -80,16 +80,16 @@ namespace SolarSpruce
             if (GameAPP.board.GetComponent<Board>().theSun > 15000)
             {
                 damage *= 3;
-                GameAPP.board.GetComponent<Board>().UseSun(200);
+                GameAPP.board.GetComponent<Board>().UseSun(200f);
             }
-            if (Lawnf.TravelUltimate(22) && GameAPP.board.GetComponent<Board>().theSun > 15000)
+            if (Lawnf.TravelUltimate((UltiBuff)22) && GameAPP.board.GetComponent<Board>().theSun > 15000)
             {
-                int outSun = GameAPP.board.GetComponent<Board>().theSun - 15000; //求出超过15000的阳光数量
-                outSun = (int)(outSun * 0.003); //超出部分*3%
+                float outSun = GameAPP.board.GetComponent<Board>().theSun - 15000; //求出超过15000的阳光数量
+                outSun = outSun * 0.003f; //超出部分*3%
                 if (outSun > 0)
                 {
                     GameAPP.board.GetComponent<Board>().UseSun(outSun); //使用超出部分*3%的阳光
-                    damage += (5 * outSun); //伤害增加超出部分*3%
+                    damage += (int)(5f * outSun); //伤害增加超出部分*3%
                 }
             }
 
@@ -181,7 +181,7 @@ namespace SolarSpruce
         {
             if (__instance.theBulletType == (BulletType)Bullet_shulkSolarSpruce.BulletID)
             {
-                if (Lawnf.TravelAdvanced(45) &&
+                if (Lawnf.TravelAdvanced((AdvBuff)45) &&
                 Lawnf.GetPlantCount(PlantType.UltimateStar, Board.Instance) + Lawnf.GetPlantCount(PlantType.UltimateBlover, Board.Instance) >= 10 &&
                 Lawnf.GetPlantCount(PlantType.UltimateCabbage, Board.Instance) >= 10)
                 {
@@ -214,7 +214,7 @@ namespace SolarSpruce
                 {
                     __instance.hitTimes = 0;
                     // MelonLogger.Msg(Lawnf.TravelUltimate(23));
-                    if (Lawnf.TravelUltimate(23))
+                    if (Lawnf.TravelUltimate((UltiBuff)23))
                     {
                         CreateItem.Instance.SetCoin(0, 0, 2, 0, zombie.axis.transform.position, false);
                         // sun.GetComponent<CoinSun>().sunPrice = 15;

@@ -62,7 +62,7 @@ namespace CustomizeLib.MelonLoader
     public struct CustomPlantData
     {
         public int ID { get; set; }
-        public PlantDataLoader.PlantData_? PlantData { get; set; }
+        public PlantDataManager.PlantData? PlantData { get; set; }
         public GameObject Prefab { get; set; }
         public GameObject Preview { get; set; }
     }

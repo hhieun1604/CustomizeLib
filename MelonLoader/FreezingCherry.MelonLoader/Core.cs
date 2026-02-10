@@ -145,7 +145,7 @@ namespace FreezingCherry.MelonLoader
         public static BuffID buff2 = -1; // 霜灭
 
         public static GameObject? IceDoomPrefab = null;
-        public static int maxCard = 15;
+        public static int maxCard = 8;
 
         public IceCherry plant => gameObject.GetComponent<IceCherry>();
         public int spawnTime = 0;
@@ -205,25 +205,44 @@ namespace FreezingCherry.MelonLoader
                 var cherry = Lawnf.SetDroppedCard(plant.axis.transform.position + new Vector3(0f, 1f, 0f), PlantType.CherryBomb);
                 cherry.SetData("FreezingCherry_CreateByCherry", true);
                 cherry.SetData("FreezingCherry_FromType", plant.thePlantType);
-                cards.Add(cherry);
-                if (cards.Count > maxCard)
-                {
-                    cards[0].existTime = Lawnf.TravelAdvanced(buff2) ? 7.5f : 15f;
-                    cards.RemoveAt(0);
-                }
+                if (cards.Count >= maxCard)
+                    cherry.existTime = Lawnf.TravelAdvanced(buff2) ? 7.5f : 15f;
+                else
+                    cards.Add(cherry);
                 spawnTime++;
                 if (spawnTime >= 3)
                 {
                     var doom = Lawnf.SetDroppedCard(plant.axis.transform.position + new Vector3(0f, 1f, 0f), PlantType.DoomShroom);
                     doom.SetData("FreezingCherry_CreateByCherry", true);
                     doom.SetData("FreezingCherry_FromType", plant.thePlantType);
-                    cards.Add(doom);
-                    if (cards.Count > maxCard)
+                    if (cards.Count(card => card.thePlantType == PlantType.DoomShroom) < 2)
                     {
-                        cards[0].existTime = Lawnf.TravelAdvanced(buff2) ? 7.5f : 15f;
-                        cards.RemoveAt(0);
+                        var list = cards.OrderByDescending(card => card.existTime).ToList();
+                        if (list.Count > 0)
+                        {
+                            var cherryCard = list.First(card => card.thePlantType == PlantType.CherryBomb);
+                            if (cherryCard != null)
+                            {
+                                cards[cards.IndexOf(cherryCard)] = doom;
+                                cards.Add(cherryCard);
+                            }
+                            else
+                                cards.Add(doom);
+                        }
+                        else
+                            cards.Add(doom);
                     }
+                    else
+                        doom.existTime = Lawnf.TravelAdvanced(buff2) ? 7.5f : 15f;
                     spawnTime = 0;
+                }
+                if (cards.Count > maxCard)
+                {
+                    for (int i = maxCard; i < cards.Count; i++)
+                    {
+                        cards[i].existTime = Lawnf.TravelAdvanced(buff2) ? 7.5f : 15f;
+                        cards.RemoveAt(i);
+                    }
                 }
                 bullet.Die();
                 plant.attributeCount -= 100;

@@ -31,7 +31,6 @@ namespace MScardyShroom.BepInEx
         public static int PlantID = 1917;
         public static List<MScardyShroom> ms = new List<MScardyShroom>();
         public bool add = false;
-        public int damageAdder = 0;
 
         public void Awake()
         {
@@ -44,10 +43,10 @@ namespace MScardyShroom.BepInEx
             if ((plant == null)) return;
             if (add)
             {
-                damageAdder++;
+                plant.attributeCount++;
                 add = false;
             }
-            int attackDamage = 300 + damageAdder * 10;
+            int attackDamage = 300 + plant.attributeCount * 10;
             plant.attackDamage = attackDamage;
         }
 
@@ -67,6 +66,7 @@ namespace MScardyShroom.BepInEx
             if (bullet == null) return null;
 
             bullet.Damage = plant.attackDamage;
+            bullet.fromType = plant.thePlantType;
 
             GameAPP.PlaySound(57, 0.5f, 1.0f);
 

@@ -493,11 +493,11 @@ namespace CustomizeLib.MelonLoader
                     {
                         attackDamage = attackDamage,
                         field_Public_PlantType_0 = (PlantType)id,
-                        field_Public_Single_0 = attackInterval,
-                        field_Public_Single_1 = produceInterval,
-                        field_Public_Int32_0 = maxHealth,
-                        field_Public_Single_2 = cd,
-                        field_Public_Int32_1 = sun
+                        attackInterval = attackInterval,
+                        field_Public_Single_0 = produceInterval,
+                        maxHealth = maxHealth,
+                        cd = cd,
+                        cost = sun
                     }
                 });
                 foreach (var f in fusions)
@@ -544,11 +544,11 @@ namespace CustomizeLib.MelonLoader
                     {
                         attackDamage = attackDamage,
                         field_Public_PlantType_0 = (PlantType)id,
-                        field_Public_Single_0 = attackInterval,
-                        field_Public_Single_1 = produceInterval,
-                        field_Public_Int32_0 = maxHealth,
-                        field_Public_Single_2 = cd,
-                        field_Public_Int32_1 = sun
+                        attackInterval = attackInterval,
+                        field_Public_Single_0 = produceInterval,
+                        maxHealth = maxHealth,
+                        cd = cd,
+                        cost = sun
                     }
                 });
                 foreach (var f in fusions)
@@ -612,15 +612,15 @@ namespace CustomizeLib.MelonLoader
                             attackDamage = attackDamage,
                             field_Public_PlantType_0 = (PlantType)id,
                             //攻击间隔
-                            field_Public_Single_0 = attackInterval,
+                            attackInterval = attackInterval,
                             //生产间隔
-                            field_Public_Single_1 = produceInterval,
+                            field_Public_Single_0 = produceInterval,
                             //最大HP
-                            field_Public_Int32_0 = maxHealth,
+                            maxHealth = maxHealth,
                             //种植冷却
-                            field_Public_Single_2 = cd,
+                            cd = cd,
                             //花费阳光
-                            field_Public_Int32_1 = sun
+                            cost = sun
                         }
                     }
                 });
@@ -637,15 +637,15 @@ namespace CustomizeLib.MelonLoader
                         attackDamage = attackDamage,
                         field_Public_PlantType_0 = (PlantType)id,
                         //攻击间隔
-                        field_Public_Single_0 = attackInterval,
+                        attackInterval = attackInterval,
                         //生产间隔
-                        field_Public_Single_1 = produceInterval,
+                        field_Public_Single_0 = produceInterval,
                         //最大HP
-                        field_Public_Int32_0 = maxHealth,
+                        maxHealth = maxHealth,
                         //种植冷却
-                        field_Public_Single_2 = cd,
+                        cd = cd,
                         //花费阳光
-                        field_Public_Int32_1 = sun
+                        cost = sun
                     }
                 });
             }
@@ -695,15 +695,15 @@ namespace CustomizeLib.MelonLoader
                             attackDamage = attackDamage,
                             field_Public_PlantType_0 = (PlantType)id,
                             //攻击间隔
-                            field_Public_Single_0 = attackInterval,
+                            attackInterval = attackInterval,
                             //生产间隔
-                            field_Public_Single_1 = produceInterval,
+                            field_Public_Single_0 = produceInterval,
                             //最大HP
-                            field_Public_Int32_0 = maxHealth,
+                            maxHealth = maxHealth,
                             //种植冷却
-                            field_Public_Single_2 = cd,
+                            cd = cd,
                             //花费阳光
-                            field_Public_Int32_1 = sun
+                            cost = sun
                         }
                     }
                 });
@@ -720,15 +720,15 @@ namespace CustomizeLib.MelonLoader
                         attackDamage = attackDamage,
                         field_Public_PlantType_0 = (PlantType)id,
                         //攻击间隔
-                        field_Public_Single_0 = attackInterval,
+                        attackInterval = attackInterval,
                         //生产间隔
-                        field_Public_Single_1 = produceInterval,
+                        field_Public_Single_0 = produceInterval,
                         //最大HP
-                        field_Public_Int32_0 = maxHealth,
+                        maxHealth = maxHealth,
                         //种植冷却
-                        field_Public_Single_2 = cd,
+                        cd = cd,
                         //花费阳光
-                        field_Public_Int32_1 = sun
+                        cost = sun
                     }
                 });
             }
@@ -1132,7 +1132,7 @@ namespace CustomizeLib.MelonLoader
         /// <param name="canClick">是否能执行</param>
         /// <param name="action">执行的事件</param>
         /// <param name="onPlant">执行时的配置</param>
-        public static void RegisterCustomClickCardOnPlantEvent([NotNull] PlantType plantType, [NotNull] PlantType cardType, [NotNull] Action<Plant> action, [NotNull] Func<Plant, bool> canClick = null, [NotNull] CustomClickCardOnPlant onPlant = default)
+        public static void RegisterCustomClickCardOnPlantEvent([NotNull] PlantType plantType, [NotNull] PlantType cardType, [NotNull] Action<Plant> action, Func<Plant, bool> canClick = null, [NotNull] CustomClickCardOnPlant onPlant = default)
         {
             if (CustomClickCardOnPlantEvents.ContainsKey((plantType, cardType)))
                 CustomClickCardOnPlantEvents[(plantType, cardType)].Add((action, canClick, onPlant));

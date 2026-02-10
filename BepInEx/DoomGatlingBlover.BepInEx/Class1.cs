@@ -59,7 +59,6 @@ namespace DoomGatlingBlover.BepInEx
             {
                 if (Lawnf.TravelAdvanced((AdvBuff)2))
                     plant.thePlantAttackCountDown -= Time.deltaTime;
-                plant.attributeCountdown = float.MaxValue; // fuck lpp
             }
         }
 
@@ -79,6 +78,7 @@ namespace DoomGatlingBlover.BepInEx
                     0, false);
 
                 bullet.Damage = plant.attackDamage;
+                bullet.fromType = plant.thePlantType;
             }
             else
             {
@@ -88,10 +88,11 @@ namespace DoomGatlingBlover.BepInEx
                     plant.shoot.position.y,
                     plant.thePlantRow,
                     BulletType.Bullet_doom_big,
-                    0, false);
+                    BulletMoveWay.MoveRight, false);
                 // 设置强力子弹属性
                 bullet.Damage = 6 * plant.attackDamage;
                 bullet.theStatus = BulletStatus.Doom_big;
+                bullet.fromType = plant.thePlantType;
 
                 // 重置射击计数
                 doomTimes = 0;
@@ -166,6 +167,18 @@ namespace DoomGatlingBlover.BepInEx
             if (__instance != null && __instance.thePlantType == DoomGatlingBlover.PlantID && reason == Plant.DieReason.ByShovel)
             {
                 Lawnf.SetDroppedCard(__instance.shoot.position, PlantType.DoomGatling);
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(nameof(UltimateGatlingBlover.AttributeEvent))]
+        [HarmonyPrefix]
+        public static bool PreAttributeEvent(UltimateGatlingBlover __instance)
+        {
+            if (__instance != null && __instance.thePlantType == DoomGatlingBlover.PlantID)
+            {
+                __instance.GetComponent<DoomGatlingBlover>()?.AnimShoot_DoomGatlingBlover();
                 return false;
             }
             return true;

@@ -1,12 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<LangVersion>latest</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>..\..\lib\BepInEx\core\0Harmony.dll</HintPath>
@@ -31,9 +30,6 @@
     </Reference>
     <Reference Include="AssetRipper.Primitives">
       <HintPath>..\..\lib\BepInEx\core\AssetRipper.Primitives.dll</HintPath>
-    </Reference>
-    <Reference Include="AssetRipper.VersionUtilities">
-      <HintPath>..\..\lib\BepInEx\core\AssetRipper.VersionUtilities.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx.Core">
       <HintPath>..\..\lib\BepInEx\core\BepInEx.Core.dll</HintPath>
@@ -360,9 +356,8 @@
       <HintPath>..\..\lib\BepInEx\interop\__Generated.dll</HintPath>
     </Reference>
   </ItemGroup>
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="COPY &quot;$(TargetPath)&quot; &quot;$(BepResPath)&quot;" />
-		<Exec Command="COPY &quot;$(TargetPath)&quot; &quot;$(PluginsPath)&quot;" />
-	</Target>
-
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <Exec Command="COPY &quot;$(TargetPath)&quot; &quot;$(BepResPath)&quot;" />
+  <Exec Command="COPY &quot;$(TargetPath)&quot; &quot;$(InnerPath)&quot;" />
+</Target>
 </Project>

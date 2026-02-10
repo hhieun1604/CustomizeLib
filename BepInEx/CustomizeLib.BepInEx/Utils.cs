@@ -40,7 +40,6 @@ namespace CustomizeLib.BepInEx
         public Func<List<PlantType>> SeedRainPlantTypes { get; set; } = () => [];
         public Func<int> Sun { get; set; } = () => 500;
         public Func<List<(int, int)>> UltiBuffs { get; set; } = () => [];
-        public Func<List<int>> UnlockPlants { get; set; } = () => [];
         public Func<int> WaveCount { get; set; } = () => 10;
         public Func<int> ZombieHealthRate { get; set; } = () => 1;
         public Func<List<ZombieType>> ZombieList { get; set; } = () => [];
@@ -56,9 +55,11 @@ namespace CustomizeLib.BepInEx
     public struct CustomPlantData
     {
         public int ID { get; set; }
-        public PlantDataLoader.PlantData_? PlantData { get; set; }
+        public PlantDataManager.PlantData PlantData { get; set; }
         public GameObject Prefab { get; set; }
         public GameObject Preview { get; set; }
+
+        public List<(BulletType, GameObject?)>? BulletList { get; set; }
     }
 
     /// <summary>
@@ -120,6 +121,26 @@ namespace CustomizeLib.BepInEx
             CardOnly = 1,
             GloveOnly = 2
         }
+    }
+    public struct BuffBgType
+    {
+        public int BgType = 0;
+
+        public static BuffBgType Day = new BuffBgType(0);
+        public static BuffBgType Night = new BuffBgType(1);
+        public static BuffBgType Pool = new BuffBgType(2);
+
+        public BuffBgType() { BgType = 0; }
+        public BuffBgType(int bgType) { BgType = bgType; }
+        public BuffBgType(TravelBuffOptionButton.BgType bgType) { BgType = (int)bgType; }
+        public BuffBgType(TravelStoreWindow.BgType bgType) { BgType = (int)bgType; }
+
+        public static implicit operator int(BuffBgType bgType) => bgType.BgType;
+        public static implicit operator TravelBuffOptionButton.BgType(BuffBgType bgType) => (TravelBuffOptionButton.BgType)bgType.BgType;
+        public static implicit operator TravelStoreWindow.BgType(BuffBgType bgType) => (TravelStoreWindow.BgType)bgType.BgType;
+        public static implicit operator BuffBgType(int bgType) => new BuffBgType(bgType);
+        public static implicit operator BuffBgType(TravelBuffOptionButton.BgType bgType) => new BuffBgType(bgType);
+        public static implicit operator BuffBgType(TravelStoreWindow.BgType bgType) => new BuffBgType(bgType);
     }
 
     public static class Extensions
@@ -215,6 +236,23 @@ namespace CustomizeLib.BepInEx
         /// <returns>Sprite对象</returns>
         public static Sprite ToSprite(this Texture2D texture2D) =>
             Sprite.Create(texture2D, new Rect(0, 0, texture2D.width, texture2D.height), new Vector2(0.5f, 0.5f));
+
+        public static List<string> GetAssetBundleAssetNames(this AssetBundle assetBundle)
+        {
+            if (assetBundle == null)
+            {
+                CustomCore.Instance.Value.Log.LogError("Failed to get AssetBundle!");
+                return new List<string>();
+            }
+
+            List<string> assetNames = new List<string>();
+
+            foreach (var asset in assetBundle.LoadAllAssets())
+            {
+                assetNames.Add(asset.name);
+            }
+            return assetNames;
+        }
 
         public static void SwapTypeMgrExtraSkinAndBackup(PlantType plantType)
         {
@@ -794,7 +832,7 @@ namespace CustomizeLib.BepInEx
             else if (Board.Instance is not null && Board.Instance.isIZ)
             {
                 GameObject? MyCard = null;
-                MyCard = IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid/Pages/Page1/PeaShooter").gameObject;
+                MyCard = IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid/Main/Page1/PeaShooter").gameObject;
                 return MyCard;
             }
             return null;

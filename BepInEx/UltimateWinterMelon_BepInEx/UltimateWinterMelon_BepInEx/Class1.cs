@@ -56,8 +56,8 @@ namespace UltimateWinterMelonBepInEx
     public class UltimateWinterMelon : MonoBehaviour
     {
         public static int PlantID = 991;
-        public static int Buff1 = -1;
-        public static int Buff2 = -1;
+        public static BuffID Buff1 = -1;
+        public static BuffID Buff2 = -1;
 
         public int superShoot = 10;
         public TextMeshPro superShootText = null;
@@ -151,7 +151,7 @@ namespace UltimateWinterMelonBepInEx
                 {
                     if (tp == 0 && Lawnf.TravelAdvanced(UltimateWinterMelon.Buff2) && z.theZombieType != ZombieType.UltimateSnowZombie && z != null && z.theZombieType != ZombieType.UltimateKirovZombie && z.theStatus != ZombieStatus.Dying && !z.beforeDying && z.theZombieRow == plant.thePlantRow && z.axis.transform.position.x > plant.axis.transform.position.x - 0.5f && !z.isMindControlled)
                     {
-                        ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, z.axis.transform.position, z.theZombieRow);
+                        ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, z.axis.transform.position, z.theZombieRow, true);
                         Vector3 pos = z.axis.transform.position;
                         pos.x = Mouse.Instance.GetBoxXFromColumn(GameAPP.board.GetComponent<Board>().columnNum);
                         Vector3 pos_trans = z.transform.position;
@@ -167,7 +167,7 @@ namespace UltimateWinterMelonBepInEx
                             int random = UnityEngine.Random.Range(1, 4);
                             for (int i = 0; i < random; i++)
                             {
-                                var bullet = CreateBullet.Instance.SetBullet(plant.shoot.transform.position.x, plant.shoot.transform.position.y, plant.thePlantRow, (BulletType)Bullet_ultimateWinterMelon.Bullet_ID, (int)BulletMoveWay.Cannon);
+                                var bullet = CreateBullet.Instance.SetBullet(plant.shoot.transform.position.x, plant.shoot.transform.position.y, plant.thePlantRow, (BulletType)Bullet_ultimateWinterMelon.Bullet_ID, BulletMoveWay.Cannon);
                                 var pos2 = bullet.cannonPos;
                                 pos2.x = z.axis.transform.position.x - 0.15f;
                                 pos2.y = z.axis.transform.position.y;
@@ -242,20 +242,18 @@ namespace UltimateWinterMelonBepInEx
                             int knockback = UnityEngine.Random.Range(0, 5);
                             if (knockback == 0)
                             {
-                                ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, z.axis.transform.position, z.theZombieRow);
+                                ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, z.axis.transform.position, z.theZombieRow, true);
                                 z.KnockBack(z.axis.transform.position.x + 3f);
                             }
 
                             int tp = UnityEngine.Random.Range(0, 10);
-                            if (tp == 0 && z.theZombieType != ZombieType.UltimateSnowZombie && z.theZombieType != ZombieType.UltimateKirovZombie)
+                            if (tp == 0 && z.theZombieType != ZombieType.UltimateSnowZombie && z.theZombieType != ZombieType.UltimateKirovZombie && 
+                                z.theZombieType != ZombieType.ZombieBoss && z.theZombieType != ZombieType.ZombieBoss2 && z.theZombieType != ZombieType.UltimateHorse)
                             {
-                                ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, z.axis.transform.position, z.theZombieRow);
+                                ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, z.axis.transform.position, z.theZombieRow, true);
                                 Vector3 pos = z.axis.transform.position;
                                 pos.x = Mouse.Instance.GetBoxXFromColumn(GameAPP.board.GetComponent<Board>().columnNum);
-                                Vector3 pos_trans = z.transform.position;
-                                pos_trans.x = Mouse.Instance.GetBoxXFromColumn(GameAPP.board.GetComponent<Board>().columnNum);
-                                z.transform.position = pos_trans;
-                                z.axis.transform.position = pos;
+                                z.SetPosition(pos);
                             }
                         }
                     }
@@ -356,14 +354,14 @@ namespace UltimateWinterMelonBepInEx
                             int knockback = UnityEngine.Random.Range(0, 5);
                             if (knockback == 0)
                             {
-                                ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, z.axis.transform.position, z.theZombieRow);
+                                ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, z.axis.transform.position, z.theZombieRow, true);
                                 z.KnockBack(z.axis.transform.position.x + 3f);
                             }
 
                             int tp = UnityEngine.Random.Range(0, 10);
                             if (tp == 0 && z.theZombieType != ZombieType.UltimateSnowZombie && z.theZombieType != ZombieType.UltimateKirovZombie)
                             {
-                                ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, z.axis.transform.position, z.theZombieRow);
+                                ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, z.axis.transform.position, z.theZombieRow, true);
                                 Vector3 pos = z.axis.transform.position;
                                 pos.x = Mouse.Instance.GetBoxXFromColumn(GameAPP.board.GetComponent<Board>().columnNum);
                                 Vector3 pos_trans = z.transform.position;
@@ -408,7 +406,7 @@ namespace UltimateWinterMelonBepInEx
         {
             try
             {
-                if (__instance != null && (int)__instance.theBulletType == Bullet_ultimateWinterMelon.Bullet_ID && __instance.theMovingWay == (int)BulletMoveWay.Cannon)
+                if (__instance != null && (int)__instance.theBulletType == Bullet_ultimateWinterMelon.Bullet_ID && __instance.MoveWay == BulletMoveWay.Cannon)
                 {
                     Vector3 position = __instance.transform.position;
                     position.y -= Time.deltaTime * __instance.detaVy;

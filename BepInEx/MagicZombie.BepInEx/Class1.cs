@@ -26,7 +26,7 @@ namespace MagicZombie.BepInEx
 
     public class MagicZombie : MonoBehaviour
     {
-        public static int ZombieID = 80;
+        public static int ZombieID = 500;
         public bool loseHead = false;
         public bool loseHand = false;
         public float magicCountDown = 5f;
@@ -72,14 +72,14 @@ namespace MagicZombie.BepInEx
                 if (Board.Instance.boardEntity.plantArray is null)
                 {
                     CreateZombie.Instance.SetZombie(zombie.theZombieRow, ZombieType.ImpZombie, zombie.axis.transform.position.x);
-                    ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, zombie.axis.transform.position);
+                    ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, zombie.axis.transform.position, lim: true);
                     return;
                 }
                 var list = Board.Instance.boardEntity.plantArray.ToArray().ToList().Where(p => p is not null).ToList();
                 if (list.Count <= 0)
                 {
                     CreateZombie.Instance.SetZombie(zombie.theZombieRow, ZombieType.ImpZombie, zombie.axis.transform.position.x);
-                    ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, zombie.axis.transform.position);
+                    ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, zombie.axis.transform.position, lim: true);
                     return;
                 }
                 var index = UnityEngine.Random.Range(0, list.Count);

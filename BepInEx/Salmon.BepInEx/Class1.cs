@@ -40,18 +40,15 @@ namespace Salmon.BepInEx
 
     public class Salmon : MonoBehaviour
     {
-        // Token: 0x06000004 RID: 4 RVA: 0x0000218A File Offset: 0x0000038A
         public Salmon() : base(ClassInjector.DerivedConstructorPointer<Salmon>())
         {
             ClassInjector.DerivedConstructorBody(this);
         }
 
-        // Token: 0x06000005 RID: 5 RVA: 0x0000219F File Offset: 0x0000039F
         public Salmon(IntPtr i) : base(i)
         {
         }
 
-        // Token: 0x06000006 RID: 6 RVA: 0x000021AC File Offset: 0x000003AC
         public void Update()
         {
             bool flag = GameAPP.board != null && GameAPP.theGameStatus == 0;
@@ -100,7 +97,6 @@ namespace Salmon.BepInEx
             }
         }
 
-        // Token: 0x06000007 RID: 7 RVA: 0x00002304 File Offset: 0x00000504
         public void Start()
         {
             try
@@ -117,8 +113,6 @@ namespace Salmon.BepInEx
             }
         }
 
-        // Token: 0x17000001 RID: 1
-        // (get) Token: 0x06000008 RID: 8 RVA: 0x00002364 File Offset: 0x00000564
         public PeaShooter plant
         {
             get
@@ -127,7 +121,32 @@ namespace Salmon.BepInEx
             }
         }
 
-        // Token: 0x04000001 RID: 1
         public static int PlantID = 1905;
+    }
+
+    [HarmonyPatch(typeof(Plant))]
+    public static class Plant_DiePatch
+    {
+        [HarmonyPatch(nameof(Plant.Die))]
+        [HarmonyPrefix]
+        public static bool Prefix(Plant __instance, Plant.DieReason reason)
+        {
+            if (__instance.thePlantType == (PlantType)Salmon.PlantID && reason != Plant.DieReason.ByShovel)
+                return false;
+            return true;
+        }
+
+        [HarmonyPatch(nameof(Plant.Crashed))]
+        [HarmonyPrefix]
+        public static bool PreCrashed(Plant __instance, Zombie zombie)
+        {
+            if (__instance.thePlantType == (PlantType)Salmon.PlantID)
+            {
+                if (zombie != null)
+                    zombie.Die();
+                return false;
+            }
+            return true;
+        }
     }
 }

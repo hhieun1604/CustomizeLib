@@ -48,8 +48,8 @@ namespace UltimateWinterCabbagecannon.BepInEx
                 "<color=#3D1400>“我一直都在尝试接近那个临界点，绝对零度。”究极冷寂迫击炮一生都在研究如何让温度降到最低，他尝试过多种方法却总是失败，“似乎有什么力量在阻止我接近它，它就像一株荷花静静的矗立在那里，只可远观不可亵玩。”究极冷寂迫击炮知道，自己越接近它，也会越害怕，“我不知道靠近它甚至是融合它会有怎样的结果，但是我愿意承担这个结果，我不会放弃，也不会马虎。”</color>"
             );
             CustomCore.AddFusion((int)PlantType.UltimateCannon, (int)UltimateWinterCabbagecannon.PlantID, (int)PlantType.Cornpult);
-            CustomCore.RegisterCustomParticle(UltimateWinterCabbagecannon.ParticleID, ab.GetAsset<GameObject>("IceDoomCabbageBomb"));
             ab.GetAsset<GameObject>("IceDoomCabbageBomb").AddComponent<BombCherry>();
+            CustomCore.RegisterCustomParticle(UltimateWinterCabbagecannon.ParticleID, ab.GetAsset<GameObject>("IceDoomCabbageBomb"));
             CustomCore.TypeMgrExtra.IsIcePlant.Add(UltimateWinterCabbagecannon.PlantID);
             CustomCore.TypeMgrExtra.DoubleBoxPlants.Add(UltimateWinterCabbagecannon.PlantID);
             CustomCore.AddUltimatePlant(UltimateWinterCabbagecannon.PlantID);
@@ -81,7 +81,7 @@ namespace UltimateWinterCabbagecannon.BepInEx
         {
             if (plant != null && GameAPP.theGameStatus == GameStatus.InGame)
             {
-                if (Lawnf.TravelUltimate((UltiBuffs)15))
+                if (Lawnf.TravelUltimate((UltiBuff)15))
                     plant.thePlantAttackCountDown -= Time.deltaTime;
             }
         }
@@ -112,7 +112,7 @@ namespace UltimateWinterCabbagecannon.BepInEx
         public void ShootStart()
         {
             originSpeed = plant.anim.speed;
-            if (Lawnf.TravelUltimate((UltiBuffs)15))
+            if (Lawnf.TravelUltimate((UltiBuff)15))
             {
                 plant.anim.speed = originSpeed * 2;
             }
@@ -138,7 +138,7 @@ namespace UltimateWinterCabbagecannon.BepInEx
         {
             if (board == null) Destroy(gameObject);
 
-            if (Lawnf.TravelUltimate(14))
+            if (Lawnf.TravelUltimate((UltiBuff)14))
                 damage *= 4;
             SetPosition();
         }
@@ -215,18 +215,6 @@ namespace UltimateWinterCabbagecannon.BepInEx
     [HarmonyPatch(typeof(CabbageCannon))]
     public static class CabbageCannonPatch
     {
-        [HarmonyPatch(nameof(CabbageCannon.GetBulletType))]
-        [HarmonyPrefix]
-        public static bool Prefix(CabbageCannon __instance, ref BulletType __result)
-        {
-            if (__instance != null && __instance.thePlantType == UltimateWinterCabbagecannon.PlantID)
-            {
-                __result = UltimateWinterCabbagecannon.BulletID;
-                return false;
-            }
-            return true;
-        }
-
         [HarmonyPatch(nameof(CabbageCannon.Shoot1))]
         [HarmonyPostfix]
         public static void PostShoot(CabbageCannon __instance)
@@ -235,6 +223,22 @@ namespace UltimateWinterCabbagecannon.BepInEx
             {
                 __instance.anim.SetTrigger("super");
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(CabbageCannon))]
+    public static class CabbageCannonPatch1
+    {
+        [HarmonyPatch(nameof(CabbageCannon.GetBulletType))]
+        [HarmonyPrefix]
+        public static bool Prefix(CabbageCannon __instance, ref BulletType __result)
+        {
+            if (__instance.thePlantType == UltimateWinterCabbagecannon.PlantID)
+            {
+                __result = UltimateWinterCabbagecannon.BulletID;
+                return false;
+            }
+            return true;
         }
     }
 
@@ -250,12 +254,13 @@ namespace UltimateWinterCabbagecannon.BepInEx
                 if (zombie != null)
                 {
                     var cherry = CreateParticle.SetParticle((int)UltimateWinterCabbagecannon.ParticleID, __instance.transform.position, 11).GetComponent<BombCherry>();
+                    cherry.OnStart(__instance.transform.position);
                     int damage = __instance.Damage;
-                    if (Lawnf.TravelUltimate((UltiBuffs)14))
+                    if (Lawnf.TravelUltimate((UltiBuff)14))
                         damage *= 4;
                     cherry.explodeDamage = damage;
                     cherry.bombRow = __instance.theBulletRow;
-                    cherry.bombType = CherryBombType.IceCharry;
+                    cherry.bombType = CherryBombType.Custom;
                     cherry.range = 1f;
                     cherry.fromType = __instance.fromType;
                     cherry.maxRow = 1;
@@ -264,9 +269,13 @@ namespace UltimateWinterCabbagecannon.BepInEx
                         z.SetCold(10f);
                         z.AddfreezeLevel(25);
                         if (z.freezeTimer > 0f)
+                        {
                             z.TakeDamage(DmgType.NormalAll, damage * 4, __instance.fromType);
+                        }
                         else
+                        {
                             z.TakeDamage(DmgType.NormalAll, damage, __instance.fromType);
+                        }
                     };
                     cherry.zombieAction = action;
                     __instance.Die();
@@ -284,7 +293,7 @@ namespace UltimateWinterCabbagecannon.BepInEx
             {
                 var cherry = CreateParticle.SetParticle((int)UltimateWinterCabbagecannon.ParticleID, __instance.transform.position, 11).GetComponent<BombCherry>();
                 int damage = __instance.Damage;
-                if (Lawnf.TravelUltimate((UltiBuffs)14))
+                if (Lawnf.TravelUltimate((UltiBuff)14))
                     damage *= 4;
                 cherry.explodeDamage = damage;
                 cherry.bombRow = __instance.theBulletRow;

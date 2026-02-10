@@ -160,14 +160,14 @@ namespace SolarHypno.BepInEx
 
             if (Vector3.Distance(transform.position, zombie.axis.transform.position + new Vector3(0f, 0.5f, 0f)) < 0.1f)
             {
-                AtttackZombie(zombie);
+                AttackZombie(zombie);
                 list.RemoveAt(0);
                 live--;
                 if (live <= 0) Die();
             }
         }
 
-        public void AtttackZombie(Zombie zombie)
+        public void AttackZombie(Zombie zombie)
         {
             if (zombie == null) return;
             if (zombie.isMindControlled)
@@ -185,7 +185,7 @@ namespace SolarHypno.BepInEx
             ParticleManager.Instance.SetParticle(
                 ParticleType.Splat_sun,
                 new Vector2(transform.position.x, transform.position.y),
-                zombie.theZombieRow
+                zombie.theZombieRow, true
             );
         }
 

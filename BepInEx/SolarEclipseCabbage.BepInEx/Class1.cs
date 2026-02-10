@@ -62,7 +62,7 @@ namespace SolarEclipseCabbage.BepInEx
             CustomCore.RegisterCustomParticle(SolarEclipseCabbage.ParticleType, ab.GetAsset<GameObject>("EclipseDoomParticle"));
             CustomCore.RegisterCustomParticle(SolarEclipseBomb.bombType, ab.GetAsset<GameObject>("EclipseBombParticle"));
             SolarEclipseCabbage.BuffID = CustomCore.RegisterCustomBuff("昼晦宵赤：当究级蚀日神卷心菜和究级血月神卷心菜同时在场时；日食的加成x3，所有魅惑僵尸属性大幅增强，且日食和血月的持续时间无限，持续召唤陨星", BuffType.AdvancedBuff, () =>
-            Board.Instance.ObjectExist<SolarEclipseCabbage>() && Board.Instance.ObjectExist<RedLunarCabbage>() && Lawnf.TravelUltimate(22) && Lawnf.TravelUltimate(23) && TravelStore.Instance != null, 15000, "#000000", PlantType.EndoFlame);
+            Board.Instance.ObjectExist<SolarEclipseCabbage>() && Board.Instance.ObjectExist<RedLunarCabbage>() && Lawnf.TravelUltimate((UltiBuff)22) && Lawnf.TravelUltimate((UltiBuff)23) && TravelStore.Instance != null, 15000, "#000000", PlantType.EndoFlame);
             CustomCore.TypeMgrExtra.LevelPlants.Add(SolarEclipseCabbage.PlantID, CardLevel.Red);
             CustomCore.AddFusion((int)PlantType.UltimateCabbage, (int)SolarEclipseCabbage.PlantID, (int)PlantType.SunFlower);
             CustomCore.AddFusion((int)PlantType.UltimateCabbage, (int)PlantType.SunFlower, (int)SolarEclipseCabbage.PlantID);
@@ -76,7 +76,7 @@ namespace SolarEclipseCabbage.BepInEx
         public static BulletType BulletID = (BulletType)1944;
         public static BulletType BulletSkinID = (BulletType)1945;
         public static ParticleType ParticleType = (ParticleType)1944;
-        public static int BuffID = -1;
+        public static BuffID BuffID = -1;
 
         public bool byTimer = false;
         public SolarCabbage plant => gameObject.GetComponent<SolarCabbage>();
@@ -196,17 +196,17 @@ namespace SolarEclipseCabbage.BepInEx
 
                     bool any = false;
                     bool buffAdd = false;
-                    if (Lawnf.TravelUltimate(23))
+                    if (Lawnf.TravelUltimate((UltiBuff)23))
                         buffAdd = true;
-
                     foreach (var plant in board.boardEntity.plantArray)
                     {
+                        var multi = 1f;
                         if (plant == null) continue;
 
                         bool trigger = false;
                         if (plant.GetData("SolarEclipse_addedDamage_base") is null || (plant.GetData("SolarEclipse_addedDamage_base") is not null && plant.GetData("SolarEclipse_addedDamage_base") is false))
                         {
-                            plant.attackDamage = (int)(plant.attackDamage * 1.5f);
+                            multi += 0.5f;
                             trigger = true;
                             plant.SetData("SolarEclipse_addedDamage_base", true);
                         }
@@ -215,7 +215,7 @@ namespace SolarEclipseCabbage.BepInEx
                         {
                             if (plant.GetData("SolarEclipse_addedDamage_extra") is null || (plant.GetData("SolarEclipse_addedDamage_extra") is not null && plant.GetData("SolarEclipse_addedDamage_extra") is false))
                             {
-                                plant.attackDamage = (int)(plant.attackDamage * 3.0f);
+                                multi += 2f;
                                 trigger = true;
                                 plant.SetData("SolarEclipse_addedDamage_extra", true);
                                 any = true;
@@ -225,18 +225,20 @@ namespace SolarEclipseCabbage.BepInEx
                         {
                             if (plant.GetData("SolarEclipse_addedDamage_buff") is null || (plant.GetData("SolarEclipse_addedDamage_buff") is not null && plant.GetData("SolarEclipse_addedDamage_buff") is false))
                             {
-                                plant.attackDamage = (int)(plant.attackDamage * 3.0f);
+                                multi += 2f;
                                 trigger = true;
                                 plant.SetData("SolarEclipse_addedDamage_buff", true);
                             }
                         }
                         if (Lawnf.GetPlantCount(PlantType.UltimateRedLunar, board) > 0 && Lawnf.GetPlantCount(SolarEclipseCabbage.PlantID, board) > 0 &&
                             Lawnf.TravelAdvanced((AdvBuff)SolarEclipseCabbage.BuffID) && trigger)
-                            plant.attackDamage *= 3;
+                            multi += 2f;
+                        if (multi != 1f)
+                            plant.ModifyDamage((PlantDamageAdder)1944, multi);
                     }
                     if (any && board.theSun > 15000)
                     {
-                        board.UseSun(200);
+                        board.UseSun(200f);
                     }
                 }
 
@@ -285,7 +287,7 @@ namespace SolarEclipseCabbage.BepInEx
                     godTimer -= Time.deltaTime;
                 if (godTimer <= 0f)
                 {
-                    if (!Lawnf.TravelAdvanced(45))
+                    if (!Lawnf.TravelAdvanced((AdvBuff)45))
                         return;
 
                     if (board == null) return;
@@ -413,7 +415,7 @@ namespace SolarEclipseCabbage.BepInEx
                     position.y += Mathf.Sin(rad) * radius;
 
                     // 创建子弹
-                    Bullet bullet = CreateBullet.Instance.SetBullet(position.x, position.y, 2, BulletType.Bullet_seaStar, 2, false);
+                    Bullet bullet = CreateBullet.Instance.SetBullet(position.x, position.y, 2, BulletType.Bullet_seaStar, (BulletMoveWay)2, false);
                     if (bullet != null)
                     {
                         bullet.transform.rotation = Quaternion.Euler(0, 0, angle);

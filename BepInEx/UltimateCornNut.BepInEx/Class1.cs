@@ -70,7 +70,7 @@ namespace UltimateCornNut.BepInEx
                         // 创建传送粒子效果
                         Vector3 zombiePos = __instance.axis.position;
                         zombiePos.y += 0.5f;
-                        ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, zombiePos, __instance.theZombieRow);
+                        ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, zombiePos, __instance.theZombieRow, lim: true);
 
                         // 传送僵尸到右侧
                         GameObject zombieObj = __instance.gameObject;

@@ -71,9 +71,9 @@ namespace ObsidianThreeGatling.BepInEx
                     int damage = totalDamage / 2000 * 40 + 120;
                     if (damage < 0 || damage > int.MaxValue)
                         damage = int.MaxValue;
-                    if (Lawnf.TravelUltimateLevel(21) == 2)
+                    if (Lawnf.TravelUltimateLevel((UltiBuff)21) == 2)
                         plant.attackDamage = damage;
-                    else if (Lawnf.TravelUltimate(21))
+                    else if (Lawnf.TravelUltimate((UltiBuff)21))
                         plant.attackDamage = damage > 1440 ? 1440 : damage;
                     else
                         plant.attackDamage = damage > 360 ? 360 : damage;
@@ -87,7 +87,7 @@ namespace ObsidianThreeGatling.BepInEx
         {
             if (plant.timer > 0f)
                 return null;
-            if (UnityEngine.Random.Range(0, 100) < 2 || (Lawnf.TravelUltimateLevel(21) == 2 && UnityEngine.Random.Range(0, 100) < 10))
+            if (UnityEngine.Random.Range(0, 100) < 2 || (Lawnf.TravelUltimateLevel((UltiBuff)21) == 2 && UnityEngine.Random.Range(0, 100) < 10))
             {
                 plant.timer = 5f;
                 plant.flashCountDown = 5f;
@@ -262,7 +262,7 @@ namespace ObsidianThreeGatling.BepInEx
                     return false;
                 }
 
-                if (Lawnf.TravelUltimate(21))
+                if (Lawnf.TravelUltimate((UltiBuff)21))
                 {
                     if (__instance.thePlantHealth <= 500 && damage <= 500)
                     {
@@ -280,9 +280,9 @@ namespace ObsidianThreeGatling.BepInEx
                         component.totalDamage += damage;
                     __instance.attributeCount = component.totalDamage;
                     int dmg = component.totalDamage / 2000 * 40 + 120;
-                    if (Lawnf.TravelUltimateLevel(21) == 2)
+                    if (Lawnf.TravelUltimateLevel((UltiBuff)21) == 2)
                         __instance.attackDamage = dmg;
-                    else if (Lawnf.TravelUltimate(21))
+                    else if (Lawnf.TravelUltimate((UltiBuff)21))
                         __instance.attackDamage = dmg > 1440 ? 1440 : dmg;
                     else
                         __instance.attackDamage = dmg > 360 ? 360 : dmg;

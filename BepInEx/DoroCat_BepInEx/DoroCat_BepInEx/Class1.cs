@@ -141,7 +141,7 @@ namespace DoroCatBepInEx
 
         public Bullet AnimShoot_DoroCat()
         {
-            Bullet bullet = Board.Instance.GetComponent<CreateBullet>().SetBullet((float)(plant.shoot.position.x), (float)plant.shoot.position.y, plant.thePlantRow, (BulletType)Bullet_doroCat.BulletID, (int)BulletMoveWay.Track);
+            Bullet bullet = Board.Instance.GetComponent<CreateBullet>().SetBullet((float)(plant.shoot.position.x), (float)plant.shoot.position.y, plant.thePlantRow, (BulletType)Bullet_doroCat.BulletID, BulletMoveWay.Track);
             bullet.Damage = plant.attackDamage;
             int soundId = UnityEngine.Random.Range(3, 5);
             GameAPP.PlaySound(

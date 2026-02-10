@@ -204,7 +204,7 @@ namespace CustomizeLib.MelonLoader
                 {
                     //如果不是融合版植物，就加载
                     if (!Enum.IsDefined(typeof(PlantType), plantType) &&
-                        PlantDataLoader.plantDatas.TryGetValue(plantType, out var plantData) && plantData != null)
+                        PlantDataManager.PlantData_Default.TryGetValue(plantType, out var plantData) && plantData != null)
                     {
                         plantTypes.Add(plantType);
                     }
@@ -254,7 +254,7 @@ namespace CustomizeLib.MelonLoader
                         image.sprite = GameAPP.resourcesManager.plantPreviews[plantTypes[i]].GetComponent<SpriteRenderer>().sprite;
                         image.SetNativeSize();
                         // 设置背景价格
-                        TempCard.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = PlantDataLoader.plantDatas[plantTypes[i]].field_Public_Int32_1.ToString();
+                        TempCard.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = PlantDataManager.PlantData_Default[plantTypes[i]].cost.ToString();
                         //卡片
                         CardUI component = TempCard.transform.GetChild(1).GetComponent<CardUI>();
                         component.gameObject.SetActive(true);
@@ -269,8 +269,8 @@ namespace CustomizeLib.MelonLoader
                         //设置数据
                         component.thePlantType = plantTypes[i];
                         component.theSeedType = (int)plantTypes[i];
-                        component.theSeedCost = PlantDataLoader.plantDatas[plantTypes[i]].field_Public_Int32_1;
-                        component.fullCD = PlantDataLoader.plantDatas[plantTypes[i]].field_Public_Single_2;
+                        component.theSeedCost = PlantDataManager.PlantData_Default[plantTypes[i]].cost;
+                        component.fullCD = PlantDataManager.PlantData_Default[plantTypes[i]].cd;
                         if (Board.Instance != null && Board.Instance.isIZ)
                         {
                             component.theSeedCost = 0;

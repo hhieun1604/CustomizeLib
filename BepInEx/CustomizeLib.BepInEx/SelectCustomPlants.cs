@@ -20,15 +20,11 @@ namespace CustomizeLib.BepInEx
             }
             if (Board.Instance != null && !Board.Instance.isIZ)
             {
-                InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/Pages").gameObject.SetActive(pageShow[0]);
-                InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/ColorfulCards").gameObject.SetActive(pageShow[1]);
-                InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/TowerCard").gameObject.SetActive(pageShow[2]);
+                InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid").GetChild(currentPage).gameObject.SetActive(true);
             }
             else if (Board.Instance != null && Board.Instance.isIZ)
             {
-                IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid/Pages").gameObject.SetActive(pageShow[0]);
-                IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid/ColorfulCards").gameObject.SetActive(pageShow[1]);
-                IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid/ColorfulCards_1").gameObject.SetActive(pageShow[2]);
+                IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid").GetChild(currentPage).gameObject.SetActive(true);
             }
         }
 
@@ -120,24 +116,23 @@ namespace CustomizeLib.BepInEx
             //基础植物和彩色植物界面隐藏
             if (Board.Instance != null && !Board.Instance.isIZ)
             {
-                pageShow[0] = InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/Pages").gameObject.active;
-                pageShow[1] = InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/ColorfulCards").gameObject.active;
-                pageShow[2] = InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/TowerCard").gameObject.active;
-                InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/Pages").gameObject
-                    .SetActive(false);
-                InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/ColorfulCards").gameObject
-                    .SetActive(false);
-                InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/TowerCard").gameObject
-                    .SetActive(false);
+                for (int i = 0; i < 5; i++)
+                    if (InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid").GetChild(i).gameObject.activeSelf)
+                    {
+                        currentPage = i;
+                        InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid").GetChild(i).gameObject.SetActive(false);
+                        break;
+                    }
             }
             else if (Board.Instance != null && Board.Instance.isIZ)
             {
-                pageShow[0] = IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid/Pages").gameObject.active;
-                pageShow[1] = IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid/ColorfulCards").gameObject.active;
-                pageShow[2] = IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid/ColorfulCards_1").gameObject.active;
-                IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid/Pages").gameObject.SetActive(false);
-                IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid/ColorfulCards").gameObject.SetActive(false);
-                IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid/ColorfulCards_1").gameObject.SetActive(false);
+                for (int i = 0; i < IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid").transform.GetChildCount(); i++)
+                    if (IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid").GetChild(i).gameObject.activeSelf)
+                    {
+                        currentPage = i;
+                        IZBottomMenu.Instance.plantLibrary.transform.FindChild("Grid").GetChild(i).gameObject.SetActive(false);
+                        break;
+                    }
             }
             //如果二创植物界面已经创建就激活，没有就创建
             if (MyPageParent != null)
@@ -148,7 +143,6 @@ namespace CustomizeLib.BepInEx
             {
                 GameObject? MyPage = null;
                 GameObject? MyCard = null;
-                int index = 0;
                 if (Board.Instance != null && !Board.Instance.isIZ)
                 {
                     MyPageParent = Instantiate(
@@ -172,27 +166,15 @@ namespace CustomizeLib.BepInEx
                     MyCard = MyPage.transform.GetChild(0).gameObject;
                     MyCard.gameObject.SetActive(false);
                 }
-                /*                try
-                                {
-                                    //使用彩色植物界面创建二创植物界面
-
-                                }
-                                catch (NullReferenceException)
-                                {
-                                    GetCardGUI(ref MyPage, ref MyCard, ref index);
-                                }*/
                 if (MyPage == null)
                     throw new NullReferenceException("找不到Page");
                 if (MyCard == null)
                     throw new NullReferenceException("找不到Card");
                 MyCard.gameObject.SetActive(false);
-                for (int i = 0; i < MyPage.transform.childCount; i++)
+                for (int i = 1; i < MyPage.transform.childCount; i++)
                 {
-                    if (i != index)
-                    {
-                        //销毁Page上的所有Card
-                        Destroy(MyPage.transform.GetChild(i).gameObject);
-                    }
+                    //销毁Page上的所有Card
+                    Destroy(MyPage.transform.GetChild(i).gameObject);
                 }
 
                 List<PlantType> plantTypes = [];
@@ -200,7 +182,7 @@ namespace CustomizeLib.BepInEx
                 {
                     //如果不是融合版植物，就加载
                     if (!Enum.IsDefined(typeof(PlantType), plantType) &&
-                        PlantDataLoader.plantDatas.TryGetValue(plantType, out var plantData) && plantData != null)
+                        PlantDataManager.PlantData_Default.TryGetValue(plantType, out var plantData) && plantData != null)
                     {
                         plantTypes.Add(plantType);
                     }
@@ -250,7 +232,7 @@ namespace CustomizeLib.BepInEx
                         image.sprite = GameAPP.resourcesManager.plantPreviews[plantTypes[i]].GetComponent<SpriteRenderer>().sprite;
                         image.SetNativeSize();
                         // 设置背景价格
-                        TempCard.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = PlantDataLoader.plantDatas[plantTypes[i]].field_Public_Int32_1.ToString();
+                        TempCard.transform.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = PlantDataManager.PlantData_Default[plantTypes[i]].cost.ToString();
                         //卡片
                         CardUI component = TempCard.transform.GetChild(1).GetComponent<CardUI>();
                         component.gameObject.SetActive(true);
@@ -265,8 +247,8 @@ namespace CustomizeLib.BepInEx
                         //设置数据
                         component.thePlantType = plantTypes[i];
                         component.theSeedType = (int)plantTypes[i];
-                        component.theSeedCost = PlantDataLoader.plantDatas[plantTypes[i]].field_Public_Int32_1;
-                        component.fullCD = PlantDataLoader.plantDatas[plantTypes[i]].field_Public_Single_2;
+                        component.theSeedCost = PlantDataManager.PlantData_Default[plantTypes[i]].cost;
+                        component.fullCD = PlantDataManager.PlantData_Default[plantTypes[i]].cd;
                         if (Board.Instance != null && Board.Instance.isIZ)
                         {
                             component.theSeedCost = 0;
@@ -455,6 +437,6 @@ namespace CustomizeLib.BepInEx
 
         public int PageNum { get; set; } = 0;
 
-        public bool[] pageShow = new bool[3];
+        public int currentPage = 0;
     }
 }

@@ -98,7 +98,7 @@ namespace UltimateDoomMinigunScaredy.BepInEx
                 {
                     __instance.anim.speed = 1f;
                 }
-                if (Lawnf.TravelAdvanced(2) && __result)
+                if (Lawnf.TravelAdvanced((AdvBuff)2) && __result)
                     __instance.anim.Play("shooting");
                 var clipInfo = __instance.anim.GetCurrentAnimatorClipInfo(1);
                 if (clipInfo.Length > 0 && clipInfo[0].clip.name == "shooting" && __instance.thePlantAttackInterval <= 0.1f)

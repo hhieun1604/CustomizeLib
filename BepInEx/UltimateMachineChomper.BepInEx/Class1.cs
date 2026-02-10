@@ -1,13 +1,14 @@
-﻿using BepInEx.Unity.IL2CPP;
-using BepInEx;
-using HarmonyLib;
-using Il2CppInterop.Runtime.Injection;
-using UnityEngine;
-using System.Reflection;
+﻿using BepInEx;
+using BepInEx.Unity.IL2CPP;
 using CustomizeLib.BepInEx;
+using HarmonyLib;
+using Il2CppInterop.Runtime;
+using Il2CppInterop.Runtime.Injection;
+using Microsoft.VisualBasic;
+using System.Reflection;
 using TMPro;
 using Unity.VisualScripting;
-using Microsoft.VisualBasic;
+using UnityEngine;
 
 namespace UltimateMachineChomper.BepInEx
 {
@@ -37,7 +38,7 @@ namespace UltimateMachineChomper.BepInEx
             foreach (BucketType bucketType in Enum.GetValues(typeof(BucketType)))
                 CustomCore.RegisterCustomUseItemOnPlantEvent((PlantType)UltimateMachineChomper.PlantID, bucketType, (plant) =>
                 {
-                    plant.Recover(PlantDataLoader.plantData[UltimateMachineChomper.PlantID].field_Public_Int32_0 * 0.2f);
+                    plant.Recover(PlantDataManager.PlantData_Default[(PlantType)UltimateMachineChomper.PlantID].maxHealth * 0.2f);
                 });
             CustomCore.AddUltimatePlant((PlantType)UltimateMachineChomper.PlantID);
             CustomCore.AddPlantAlmanacStrings(UltimateMachineChomper.PlantID, $"究极机械战神",
@@ -117,8 +118,7 @@ namespace UltimateMachineChomper.BepInEx
                     sprites.Add(plant.gameObject.transform.FindChild("body/head/armor_head").gameObject);
                     sprites.Add(plant.gameObject.transform.FindChild("body/front/armor_front").gameObject);
                     plant.range = new Vector2(3.5f, 3.5f);
-                    Vector2 newPos = new Vector2(plant.axis.transform.position.x + 0.75f, plant.axis.transform.position.y);
-                    plant.pos = newPos;
+                    plant.centerOffset = new Vector2(0.75f, 0f);
                     totalDamage = 0;
                     landSubmarine = null;
                     isInit = true;
@@ -136,7 +136,7 @@ namespace UltimateMachineChomper.BepInEx
                     if (!isInit) Start();
                     if (plant.targetZombie == null && GameAPP.theGameStatus == GameStatus.InGame)
                         plant.ChomperSearchZombie();
-                    int value = Lawnf.TravelUltimate(1) ? plant.thePlantMaxHealth : plant.thePlantMaxHealth * 2;
+                    int value = Lawnf.TravelUltimate((UltiBuff)1) ? plant.thePlantMaxHealth : plant.thePlantMaxHealth * 2;
                     bool flag = totalDamage >= value;
                     if (flag)
                         plant.attributeCountdown = 0f;
@@ -312,7 +312,7 @@ namespace UltimateMachineChomper.BepInEx
                 }
 
                 // 创建咬噬检测区域
-                Vector2 biteCenter = new Vector2(__instance.pos.x, __instance.pos.y);
+                Vector2 biteCenter = new Vector2(__instance.Pos.x, __instance.Pos.y);
                 Vector2 biteSize = new Vector2(__instance.range.x, __instance.range.y);
                 int zombieLayerMask = __instance.zombieLayer;
 
@@ -352,7 +352,7 @@ namespace UltimateMachineChomper.BepInEx
                 dynamicDamage = Mathf.Max(__instance.attackDamage, dynamicDamage);
 
                 // 旅行模式伤害加成
-                if (Lawnf.TravelAdvanced(62))
+                if (Lawnf.TravelAdvanced((AdvBuff)62))
                     dynamicDamage *= 1.5f;
 
                 __instance.Recover(0.4f * dynamicDamage);
@@ -371,7 +371,7 @@ namespace UltimateMachineChomper.BepInEx
             if ((int)__instance.thePlantType == UltimateMachineChomper.PlantID)
             {
                 UltimateMachineChomper component = __instance.GetComponent<UltimateMachineChomper>();
-                int value = Lawnf.TravelUltimate(1) ? __instance.thePlantMaxHealth : __instance.thePlantMaxHealth * 2;
+                int value = Lawnf.TravelUltimate((UltiBuff)1) ? __instance.thePlantMaxHealth : __instance.thePlantMaxHealth * 2;
                 bool flag = component != null && component.totalDamage >= value;
                 if (flag)
                 {
@@ -392,7 +392,7 @@ namespace UltimateMachineChomper.BepInEx
                     zombie.Die(2); // 2表示吞噬死亡
 
                     // 设置消化倒计时
-                    __instance.attributeCountdown = Lawnf.TravelUltimate(1) ? 15f : 40f;
+                    __instance.attributeCountdown = Lawnf.TravelUltimate((UltiBuff)1) ? 15f : 40f;
 
                     // 触发恢复动画
 
@@ -412,7 +412,7 @@ namespace UltimateMachineChomper.BepInEx
                 dynamicDamage = Mathf.Max(__instance.attackDamage, dynamicDamage);
 
                 // 旅行模式伤害加成
-                if (Lawnf.TravelAdvanced(62))
+                if (Lawnf.TravelAdvanced((AdvBuff)62))
                     dynamicDamage *= 1.5f;
 
                 // 对僵尸造成伤害
@@ -596,8 +596,7 @@ namespace UltimateMachineChomper.BepInEx
             if ((int)__instance.thePlantType == UltimateMachineChomper.PlantID)
             {
                 __instance.range = new Vector2(3.5f, 3.5f);
-                Vector2 newPos = new Vector2(__instance.axis.transform.position.x + 0.75f, __instance.axis.transform.position.y);
-                __instance.pos = newPos;
+                __instance.centerOffset = new Vector2(0.75f, 0f);
                 return false;
             }
             return true;
@@ -682,7 +681,7 @@ namespace UltimateMachineChomper.BepInEx
                     for (int i = 0; i < plants.Count; i++)
                     {
                         Plant p = plants[i];
-                        p?.Recover((PlantDataLoader.plantData[UltimateMachineChomper.PlantID].field_Public_Int32_0 * 0.2f) / num);
+                        p?.Recover((PlantDataManager.PlantData_Default[(PlantType)UltimateMachineChomper.PlantID].maxHealth * 0.2f) / num);
                     }
                 }
             }
