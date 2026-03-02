@@ -24,6 +24,14 @@ namespace CustomizeLib.BepInEx
             return result;
         }
 
+        public static Il2CppSystem.Collections.Generic.List<T> CreateNewList<T>(this Il2CppSystem.Collections.Generic.List<T> list)
+        {
+            var result = new Il2CppSystem.Collections.Generic.List<T>();
+            foreach (var item in list)
+                result.Add(item);
+            return result;
+        }
+
         public static Il2CppSystem.Type ToIl2CppType(this Type type)
         {
             if (type == null) return null;

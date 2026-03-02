@@ -164,454 +164,55 @@ namespace CustomizeLib.BepInEx
             OnGameInitAction.Add(OnGameInit);
         }
 
-        public virtual void OnStart()
-        {
+        public virtual void OnStart() { }
 
-        }
-
-        public virtual void OnGameInit()
-        {
-
-        }
+        public virtual void OnGameInit() { }
     }
 
     public static class CoreTools
     {
-        public static AdvBuff GetAdvBuffByString(string name)
+        public static Dictionary<string, AdvBuff> AdvBuffPair = new();
+        public static Dictionary<string, UltiBuff> UltiBuffPair = new();
+
+        public static void Init()
         {
-            var id = -1;
-            #region 映射
-            switch (name)
+            foreach (var (buff, str) in TravelDictionary.advancedBuffsText)
             {
-                case "撒豆成兵":
-                    id = 0;
-                    break;
-                case "精兵强将":
-                    id = 1;
-                    break;
-                case "枕戈待旦":
-                    id = 2;
-                    break;
-                case "核能威慑":
-                    id = 3;
-                    break;
-                case "妙手回春":
-                    id = 4;
-                    break;
-                case "无关痛痒":
-                    id = 5;
-                    break;
-                case "尸愁之路":
-                    id = 6;
-                    break;
-                case "百炼成钢":
-                    id = 7;
-                    break;
-                case "百步穿杨":
-                    id = 8;
-                    break;
-                case "怒火攻心":
-                    id = 9;
-                    break;
-                case "势如破竹":
-                    id = 10;
-                    break;
-                case "冻彻心扉":
-                    id = 11;
-                    break;
-                case "多多益善":
-                    id = 12;
-                    break;
-                case "等价交换":
-                    id = 13;
-                    break;
-                case "人工智能":
-                    id = 14;
-                    break;
-                case "弹射起步":
-                    id = 15;
-                    break;
-                case "特制弹药":
-                    id = 16;
-                    break;
-                case "一针见血":
-                    id = 17;
-                    break;
-                case "可控核聚变":
-                    id = 18;
-                    break;
-                case "人多势众":
-                    id = 19;
-                    break;
-                case "大富翁":
-                    id = 20;
-                    break;
-                case "好运连连":
-                    id = 21;
-                    break;
-                case "量子护盾":
-                    id = 22;
-                    break;
-                case "高能射线":
-                    id = 23;
-                    break;
-                case "枪枪爆头":
-                    id = 24;
-                    break;
-                case "开炮":
-                    id = 25;
-                    break;
-                case "电磁涡轮":
-                    id = 26;
-                    break;
-                case "万磁王":
-                    id = 27;
-                    break;
-                case "罪恶之力":
-                    id = 28;
-                    break;
-                case "深度定制":
-                    id = 29;
-                    break;
-                case "核能射线":
-                    id = 30;
-                    break;
-                case "链式反应":
-                    id = 31;
-                    break;
-                case "尸愁之路II":
-                    id = 32;
-                    break;
-                case "滑滑梯":
-                    id = 33;
-                    break;
-                case "磁力护盾":
-                    id = 34;
-                    break;
-                case "磁能科技":
-                    id = 35;
-                    break;
-                case "至极手速":
-                    id = 1000;
-                    break;
-                case "全息制冷":
-                    id = 1001;
-                    break;
-                case "熠熠生辉":
-                    id = 1002;
-                    break;
-                case "极速战备":
-                    id = 1003;
-                    break;
-                case "复制中心":
-                    id = 1004;
-                    break;
-                case "运斤如风":
-                    id = 1005;
-                    break;
-                case "全副武装":
-                    id = 1006;
-                    break;
-                case "致命一击":
-                    id = 1007;
-                    break;
-                case "强力打击":
-                    id = 1008;
-                    break;
-                case "精准打击":
-                    id = 1009;
-                    break;
-                case "合理投资":
-                    id = 1010;
-                    break;
-                case "极致之冰":
-                    id = 1011;
-                    break;
-                case "聚光盆":
-                    id = 1012;
-                    break;
-                case "真樱":
-                    id = 1013;
-                    break;
-                case "拆分":
-                    id = 1014;
-                    break;
-                case "连连看":
-                    id = 1015;
-                    break;
-                case "肉身成圣":
-                    id = 1016;
-                    break;
-                case "斗转星移":
-                    id = 1017;
-                    break;
-                case "灯火通明":
-                    id = 1018;
-                    break;
-                case "真毁":
-                    id = 2000;
-                    break;
-                case "排山倒海":
-                    id = 2001;
-                    break;
-                case "升级":
-                    id = 2002;
-                    break;
-                case "绝对力量":
-                    id = 2003;
-                    break;
-                case "爽快射击":
-                    id = 2004;
-                    break;
-                case "生命偷取":
-                    id = 2005;
-                    break;
-                case "过载":
-                    id = 2006;
-                    break;
-                case "腐化":
-                    id = 2007;
-                    break;
-                case "净化":
-                    id = 2008;
-                    break;
-                case "我是传奇":
-                    id = 3000;
-                    break;
-                case "星神合一":
-                    id = 3001;
-                    break;
-                case "火力全开":
-                    id = 3002;
-                    break;
-                case "星月护符":
-                    id = 3003;
-                    break;
-                case "永寂新星":
-                    id = 3004;
-                    break;
-                case "力量会给予希望":
-                    id = 3005;
-                    break;
-                case "无限火力":
-                    id = 3006;
-                    break;
-                case "迷你巨人":
-                    id = 4000;
-                    break;
-                case "迷你将军":
-                    id = 4001;
-                    break;
-                case "迷你雪皇":
-                    id = 4002;
-                    break;
-                case "迷你丑皇":
-                    id = 4003;
-                    break;
-                case "Curse_巨人杀手":
-                    id = 5000;
-                    break;
-                case "Curse_诅咒之力":
-                    id = 5001;
-                    break;
-                case "Curse_诸神黄昏":
-                    id = 5002;
-                    break;
-                case "Curse_荆狂诅咒":
-                    id = 5003;
-                    break;
-                case "Curse_贪婪诅咒":
-                    id = 5004;
-                    break;
-                case "Rogue_后备能源":
-                    id = 6000;
-                    break;
-                case "Rogue_究极樱桃战神专精I":
-                    id = 6001;
-                    break;
-                case "Rogue_究极樱桃战神专精II":
-                    id = 6002;
-                    break;
-                case "Rogue_究极樱桃射手专精I":
-                    id = 6003;
-                    break;
-                case "Rogue_究极樱桃射手专精II":
-                    id = 6004;
-                    break;
-                case "Rogue_究极大喷菇专精I":
-                    id = 6005;
-                    break;
-                case "Rogue_究极大喷菇专精II":
-                    id = 6006;
-                    break;
-                case "Rogue_究极窝炬专精I":
-                    id = 6007;
-                    break;
-                case "Rogue_究极窝炬专精II":
-                    id = 6008;
-                    break;
-                case "Rogue_推车保护":
-                    id = 6009;
-                    break;
+                int index = str.IndexOf('：');
+                if (index == -1)
+                    index = str.IndexOf(":");
+                if (index != -1)
+                {
+                    if (!AdvBuffPair.ContainsKey(str.Substring(0, index)))
+                        AdvBuffPair.Add(str.Substring(0, index), buff);
+                }
             }
-            #endregion
-            return (AdvBuff)id;
+
+            foreach (var (buff, str) in TravelDictionary.ultimateBuffsText)
+            {
+                int index = str.IndexOf('：');
+                if (index == -1)
+                    index = str.IndexOf(":");
+                if (index != -1)
+                {
+                    if (!UltiBuffPair.ContainsKey(str.Substring(0, index)))
+                        UltiBuffPair.Add(str.Substring(0, index), buff);
+                }
+            }
         }
 
+        public static AdvBuff GetAdvBuffByString(string name)
+        {
+            if (AdvBuffPair.ContainsKey(name))
+                return AdvBuffPair[name];
+            return (AdvBuff)(-1);
+        }
 
         public static UltiBuff GetUltiBuffByString(string name)
         {
-            var id = -1;
-            #region 映射
-            switch (name)
-            {
-                case "嗜血如命":
-                    id = 0;
-                    break;
-                case "极速吞噬":
-                    id = 1;
-                    break;
-                case "力大砖飞":
-                    id = 2;
-                    break;
-                case "快速填装":
-                    id = 3;
-                    break;
-                case "凛风刺骨":
-                    id = 4;
-                    break;
-                case "三尺之寒":
-                    id = 5;
-                    break;
-                case "事半功倍":
-                    id = 6;
-                    break;
-                case "窝红温了":
-                    id = 7;
-                    break;
-                case "流星雨":
-                    id = 8;
-                    break;
-                case "众星之力":
-                    id = 9;
-                    break;
-                case "万籁俱寂":
-                    id = 10;
-                    break;
-                case "以爆制爆":
-                    id = 11;
-                    break;
-                case "见者有份":
-                    id = 12;
-                    break;
-                case "蒜毒骤发":
-                    id = 13;
-                    break;
-                case "中心爆破":
-                    id = 14;
-                    break;
-                case "兵贵神速":
-                    id = 15;
-                    break;
-                case "世纪之盾":
-                    id = 16;
-                    break;
-                case "两肋插刀":
-                    id = 17;
-                    break;
-                case "普度众生":
-                    id = 18;
-                    break;
-                case "永动机":
-                    id = 19;
-                    break;
-                case "阻冲之":
-                    id = 20;
-                    break;
-                case "狂战士":
-                    id = 21;
-                    break;
-                case "金光闪闪":
-                    id = 22;
-                    break;
-                case "人造太阳":
-                    id = 23;
-                    break;
-                case "三位一体":
-                    id = 24;
-                    break;
-                case "镭射激光":
-                    id = 25;
-                    break;
-                case "气定神闲":
-                    id = 26;
-                    break;
-                case "僵尸试图在火海中游泳":
-                    id = 27;
-                    break;
-                case "厚积薄发":
-                    id = 28;
-                    break;
-                case "打折券":
-                    id = 29;
-                    break;
-                case "无尽贪婪":
-                    id = 30;
-                    break;
-                case "万劫不复":
-                    id = 31;
-                    break;
-                case "延时飞刃":
-                    id = 32;
-                    break;
-                case "生机永驻":
-                    id = 33;
-                    break;
-                case "深渊巨口":
-                    id = 34;
-                    break;
-                case "光芒四射":
-                    id = 35;
-                    break;
-                case "爆米花":
-                    id = 36;
-                    break;
-                case "超载":
-                    id = 37;
-                    break;
-                case "连锁反应":
-                    id = 38;
-                    break;
-                case "大容量":
-                    id = 39;
-                    break;
-                case "集中轰炸":
-                    id = 40;
-                    break;
-                case "聚精会神":
-                    id = 41;
-                    break;
-                case "炙热射线":
-                    id = 42;
-                    break;
-                case "三昧真火":
-                    id = 43;
-                    break;
-                case "深海恐惧":
-                    id = 44;
-                    break;
-                case "群体出动":
-                    id = 45;
-                    break;
-                case "斩将祭旗":
-                    id = 46;
-                    break;
-                case "黑曜护体":
-                    id = 47;
-                    break;
-            }
-            #endregion
-            return (UltiBuff)id;
+            if (UltiBuffPair.ContainsKey(name))
+                return UltiBuffPair[name];
+            return (UltiBuff)(-1);
         }
 
 
@@ -854,6 +455,117 @@ namespace CustomizeLib.BepInEx
             }
             #endregion
             return (TravelUnlocks)id;
+        }
+
+        public static bool TravelAdvanced(string name) => Lawnf.TravelAdvanced(GetAdvBuffByString(name));
+
+        public static bool TravelUltimate(string name) => Lawnf.TravelUltimate(GetUltiBuffByString(name));
+        public static int TravelUltimateLevel(string name) => Lawnf.TravelUltimateLevel(GetUltiBuffByString(name));
+
+        public static List<int> Range(int end = 1)
+        {
+            var result = new List<int>();
+            for (int i = 0; i < end; i++)
+                result.Add(i);
+            return result;
+        }
+
+        public static GameObject CreateCherryExplodeCustom(Vector2 v, int theRow, CherryBombType bombType = CherryBombType.Normal,
+            int damage = 1800, PlantType fromType = PlantType.Nothing, Il2CppSystem.Action<Zombie> action = null, bool immediately = true,
+            bool shake = true)
+        {
+            var particle = CreateParticle.SetParticle(CustomCore.CustomCherryStartID + (int)bombType, v, 11);
+            if (shake)
+                ScreenShake.TriggerShake(0.15f);
+            GameAPP.PlaySound(40, 0.5f, 1.0f);
+
+            BombCherry cherry = new BombCherry();
+            cherry.board = Board.Instance;
+            cherry.damageToZombie = damage;
+            cherry.bombRow = theRow;
+            cherry.bombType = bombType;
+            cherry.zombieAction = action;
+            cherry.bombPosition = v;
+            cherry.fromType = fromType;
+            cherry.targetPlant = null;
+
+            if (immediately)
+            {
+                cherry.Explode();
+            }
+
+            return particle;
+        }
+
+        /// <summary>
+        /// 创建樱桃爆炸
+        /// </summary>
+        /// <param name="v">位置</param>
+        /// <param name="theRow">行</param>
+        /// <param name="bombType">樱桃爆炸类型</param>
+        /// <param name="damage">伤害</param>
+        /// <param name="fromType">来源</param>
+        /// <param name="action">僵尸操作</param>
+        /// <param name="immediately">是否立即引爆</param>
+        /// <param name="shake">是否晃动屏幕</param>
+        /// <param name="soundID">音效ID</param>
+        /// <param name="volume">音量(子弹填0.2f)</param>
+        /// <param name="pitch"></param>
+        /// <returns></returns>
+        public static (BombCherry, GameObject) CreateCherryExplode(Vector2 v, int theRow, CherryBombType bombType = CherryBombType.Normal,
+            int damage = 1800, PlantType fromType = PlantType.Nothing, Il2CppSystem.Action<Zombie> action = null, bool immediately = true,
+            bool shake = true, int soundID = 40, float volume = 0.5f, float pitch = 1f)
+        {
+            if (Board.Instance == null || Board.Instance.IsDestroyed()) return (null, null);
+            GameObject particle = null;
+            if (CustomCore.CustomCherrys.ContainsKey(bombType))
+            {
+                particle = CreateParticle.SetParticle(CustomCore.CustomCherryStartID + (int)bombType, v, 11);
+                GameAPP.PlaySound(soundID, volume, pitch);
+            }
+            else
+            {
+                if (bombType == CherryBombType.Sun)
+                {
+                    particle = ParticleManager.Instance.SetParticle(ParticleType.SunBombCloud, v, 11).gameObject;
+                }
+                else if (bombType == CherryBombType.Bullet || bombType == CherryBombType.BulletAll)
+                {
+                    particle = ParticleManager.Instance.SetParticle(ParticleType.BombCloudSmall, v, 11).gameObject;
+                }
+                else if (bombType == CherryBombType.IceCharry)
+                {
+                    particle = ParticleManager.Instance.SetParticle(ParticleType.BombCloud_blue, v, 11).gameObject;
+                }
+                else
+                {
+                    particle = ParticleManager.Instance.SetParticle(ParticleType.BombCloud, v, 11).gameObject;
+                }
+                GameAPP.PlaySound(soundID, volume, pitch);
+            }
+            if (shake)
+                ScreenShake.TriggerShake(0.15f);
+
+            // 创建樱桃炸弹对象
+            BombCherry cherryExplode = new BombCherry();
+
+            // 设置炸弹属性
+            cherryExplode.board = Board.Instance;
+            cherryExplode.damageToZombie = damage;
+            cherryExplode.bombRow = theRow;
+            cherryExplode.bombType = bombType;
+            cherryExplode.zombieAction = action;
+            cherryExplode.bombPosition = v;
+            cherryExplode.fromType = fromType;
+            cherryExplode.targetPlant = null;
+
+            // 如果设置为立即爆炸，则直接引爆
+            if (immediately)
+            {
+                cherryExplode.Explode();
+            }
+
+            return (cherryExplode, particle);
         }
     }
 }

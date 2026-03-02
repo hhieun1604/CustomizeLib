@@ -28,14 +28,15 @@ namespace SuperConveyorBelt2.BepInEx
                 Logger.LogWarning("未安装 僵尸模仿者 Mod，超级传送带·福祸相依将不会加载！");
                 return;
             }
-            NormalPlants = GameAPP.resourcesManager.allPlants.ToSystemList().Where(t => !Lawnf.IsUltiPlant(t) && !TypeMgr.IsWaterPlant(t)).ToList();
-            UltiPlants = GameAPP.resourcesManager.allPlants.ToSystemList().Where(t => Lawnf.IsUltiPlant(t) && !TypeMgr.IsWaterPlant(t)).ToList();
+            NormalPlants = GameAPP.resourcesManager.allPlants.ToSystemList().Where(t => !Lawnf.IsUltiPlant(t) && !TypeMgr.IsWaterPlant(t) && !TypeMgr.IsSpecialPlant(t) && !Lawnf.TowerPlant(t) && t != PlantType.MixBomb).ToList();
+            UltiPlants = GameAPP.resourcesManager.allPlants.ToSystemList().Where(t => Lawnf.IsUltiPlant(t) && !TypeMgr.IsWaterPlant(t) && !TypeMgr.IsSpecialPlant(t) && !Lawnf.TowerPlant(t) && t != PlantType.MixBomb).ToList();
 
             CustomLevelData customLevelData = new CustomLevelData();
             var boardTag = new Board.BoardTag();
             boardTag.isConvey = true;
             boardTag.enableAllTravelPlant = true;
             boardTag.enableTravelPlant = true;
+            boardTag.isSuperRandom = true;
             customLevelData.BoardTag = boardTag;
             customLevelData.Name = () => "超级传送带：福祸相依";
             customLevelData.SceneType = SceneType.Day_6;
@@ -63,13 +64,13 @@ namespace SuperConveyorBelt2.BepInEx
     [HarmonyPatch(typeof(ConveyManager))]
     public static class ConveyManagerPatch
     {
-        [HarmonyPatch(nameof(ConveyManager.Start))]
+        [HarmonyPatch(nameof(ConveyManager.NewCardUpdate))]
         [HarmonyPostfix]
         public static void PostStart(ConveyManager __instance)
         {
             if (GameAPP.theBoardLevel == Core.levelID && (int)GameAPP.theBoardType == 66)
             {
-                __instance.interval = 4.5f;
+                __instance.interval = 3.5f;
             }
         }
 
@@ -80,11 +81,11 @@ namespace SuperConveyorBelt2.BepInEx
             if (GameAPP.theBoardLevel == Core.levelID && (int)GameAPP.theBoardType == 66)
             {
                 var v = UnityEngine.Random.Range(1, 101);
-                if (v <= 40)
+                if (v <= 30)
                 {
                     __result = Core.NormalPlants[UnityEngine.Random.Range(0, Core.NormalPlants.Count)];
                 }
-                else if (v <= 55)
+                else if (v <= 50)
                 {
                     __result = Core.UltiPlants[UnityEngine.Random.Range(0, Core.UltiPlants.Count)];
                 }
@@ -96,9 +97,13 @@ namespace SuperConveyorBelt2.BepInEx
                 {
                     __result = (PlantType)1931;
                 }
-                else
+                else if (v <= 98)
                 {
                     __result = PlantType.DiamondImitater;
+                }
+                else
+                {
+                    __result = PlantType.Present;
                 }
             }
         }

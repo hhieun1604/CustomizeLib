@@ -19,10 +19,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\CustomizeLib.MelonLoader\CustomizeLib.MelonLoader.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Reference Include="0Harmony">
 			<HintPath>..\..\lib\MelonLoader\net6\0Harmony.dll</HintPath>
 		</Reference>

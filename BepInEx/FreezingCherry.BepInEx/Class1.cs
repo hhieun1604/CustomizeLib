@@ -126,7 +126,7 @@ namespace FreezingCherry.BepInEx
                 UltimateFreezingCherry.buff = CustomCore.RegisterCustomBuff("霜陨子母弹：手套抓取核爆樱桃及亚种点击究极寒霜樱桃时，双方将进行短暂融合裂变，对全屏僵尸造成毁灭性打击",
                     BuffType.AdvancedBuff, () => TravelStore.Instance != null && Lawnf.TravelAdvanced((AdvBuff)30) && Lawnf.TravelAdvanced((AdvBuff)31) &&
                     Lawnf.TravelAdvanced(FreezingCherry.buff1) && Lawnf.TravelAdvanced(FreezingCherry.buff2), 15000, plantType: PlantType.EndoFlame);
-                CustomCore.RegisterCustomFailMixEvent(UltimateFreezingCherry.PlantID, () => (Lawnf.TravelAdvanced(FreezingCherry.buff1) && Lawnf.TravelAdvanced(FreezingCherry.buff2)) ||
+                CustomCore.RegisterCustomBanMix(UltimateFreezingCherry.PlantID, () => (Lawnf.TravelAdvanced(FreezingCherry.buff1) && Lawnf.TravelAdvanced(FreezingCherry.buff2)) ||
                 Board.Instance.boardTag.enableAllTravelPlant || Board.Instance.boardTag.isSuperRandom || Board.Instance.boardTag.isUltimateSuperRandom || GameAPP.developerMode,
                     null, () => InGameText.Instance.ShowText("该配方需要抽取", 3f));
                 CustomCore.AddUltimatePlant(UltimateFreezingCherry.PlantID);
@@ -611,8 +611,8 @@ namespace FreezingCherry.BepInEx
                             damage *= 4;
                         z.TakeDamage(DmgType.NormalAll, damage, __instance.GetData<PlantType>("FreezingCherry_FromType"));
                     };
-                    var bomb = __instance.board.CreateCherryExplode(__instance.transform.position, Mouse.Instance.GetRowFromY(__instance.transform.position.x, __instance.transform.position.y), CherryBombType.IceCharry,
-                        3600, __instance.GetData<PlantType>("FreezingCherry_FromType"), action);
+                    var bomb = CoreTools.CreateCherryExplode(__instance.transform.position, Mouse.Instance.GetRowFromY(__instance.transform.position.x, __instance.transform.position.y), CherryBombType.IceCharry,
+                        3600, __instance.GetData<PlantType>("FreezingCherry_FromType"), action).Item2;
                     if (GameAPP.distablexplodeFlash)
                     {
                         bomb.GetComponent<ParticleSystem>().Simulate(0f, true);
@@ -647,7 +647,7 @@ namespace FreezingCherry.BepInEx
                         else
                             z.TakeDamage(DmgType.NormalAll, __instance.Damage, __instance.fromType);
                     };
-                    var cherry = __instance.board.CreateCherryExplode(__instance.transform.position, __instance.theBulletRow, UltimateFreezingCherry.CherrySmallID, __instance.Damage, action: action);
+                    var cherry = CoreTools.CreateCherryExplode(__instance.transform.position, __instance.theBulletRow, UltimateFreezingCherry.CherrySmallID, __instance.Damage, action: action, volume: 0.2f).Item1;
                     cherry.bombRow = __instance.theBulletRow;
                     cherry.range = 1f;
                     cherry.fromType = __instance.fromType;
@@ -679,7 +679,7 @@ namespace FreezingCherry.BepInEx
                     else
                         z.TakeDamage(DmgType.NormalAll, __instance.Damage, __instance.fromType);
                 };
-                var cherry = __instance.board.CreateCherryExplode(__instance.transform.position, __instance.theBulletRow, UltimateFreezingCherry.CherrySmallID, __instance.Damage, action: action);
+                var cherry = CoreTools.CreateCherryExplode(__instance.transform.position, __instance.theBulletRow, UltimateFreezingCherry.CherrySmallID, __instance.Damage, action: action, volume: 0.2f).Item1;
                 cherry.bombRow = __instance.theBulletRow;
                 cherry.range = 1f;
                 cherry.fromType = __instance.fromType;
@@ -694,6 +694,22 @@ namespace FreezingCherry.BepInEx
                 return false;
             }
             return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(Mouse), nameof(Mouse.GetPlantsOnMouse))]
+    public static class MousePatch
+    {
+        [HarmonyPostfix]
+        public static void Postfix(Il2CppSystem.Collections.Generic.List<Plant> __result)
+        {
+            for (int i = __result.Count - 1; i >= 0; i--)
+            {
+                var plant = __result[i];
+                if (plant == null) return;
+                if (plant.thePlantType == UltimateFreezingCherry.PlantID && plant.anim.GetInteger("cureentStatus") != 0)
+                    __result.Remove(plant);
+            }
         }
     }
 }

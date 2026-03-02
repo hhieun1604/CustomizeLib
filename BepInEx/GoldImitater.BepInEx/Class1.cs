@@ -43,7 +43,7 @@ namespace GoldImitater.BepInEx
                 "<color=#3D1400>“茄本无相，吾有万象。”黄金模仿者侃侃而谈：“就像你看到的，我可以是任何植物，任何僵尸，在后院奋战的豌豆是我，高举旗帜冲锋的僵尸也是我，沉入土壤的尸体是我，哇哇啼哭的孩童也是我。但是'我'与'我'之间的性格是不同的，记忆是不同的，童年成长都是不同的，他们各司其职，他们努力生活。“那拥有不同记忆不同性格的你还是你么”黄金模仿者似乎陷入了沉思……不再说话。</color>\n\n" +
                 "<color=#955300>价格：</color><color=red>50</color>\n" +
                 "<color=#955300>冷却：</color><color=red>15秒</color>");
-            CustomCore.RegisterCustomCardToColorfulCards((PlantType)GoldImitater.PlantID);
+            CustomCore.RegisterCustomCardToColorfulCards((PlantType)GoldImitater.PlantID, 14);
             GoldImitater.buff = CustomCore.RegisterCustomBuff("孤注一掷：黄金模仿者出现究极植物与究极僵尸的概率大幅提高", BuffType.AdvancedBuff, () => true, 5000, plantType: (PlantType)GoldImitater.PlantID);
         }
     }
@@ -53,6 +53,21 @@ namespace GoldImitater.BepInEx
         public static BuffID buff = -1;
         public static int PlantID = 1931;
 
+        public void Start()
+        {
+            int total = 0;
+            var config = GameAPP.config;
+            if (config.levelZombieInRandom) total += 2;
+            if (config.strongUltiZombieInRandom) total += 2;
+            if (config.leaderInRandom) total += 6;
+            if (GameAPP.theGameStatus == GameStatus.InGame && plant != null && UnityEngine.Random.Range(1, 101) <= total && (plant.board.boardTag.isSuperRandom || plant.board.isIZ))
+            {
+                plant.StarUp();
+                plant.starUp = true;
+                plant.UpdateStarIcon();
+            }
+        }
+
         public void AnimSpawn()
         {
             ParticleManager.Instance.SetParticle(ParticleType.RandomCloud, plant.axis.transform.position, plant.thePlantRow, lim: true);
@@ -61,7 +76,7 @@ namespace GoldImitater.BepInEx
             var axis = plant.axis.transform.position;
             plant.Die();
             var v = UnityEngine.Random.Range(1, 101);
-            if (!Lawnf.TravelAdvanced(buff))
+            if (!Lawnf.TravelAdvanced(buff) && !plant.starUp)
             {
                 if (v <= 60)
                 {
@@ -79,13 +94,13 @@ namespace GoldImitater.BepInEx
             }
             else
             {
-                if (v <= 50)
+                if (v <= 45)
                 {
-                    RandomPlant(v, 10, 40, column, row);
+                    RandomPlant(v, 10, 35, column, row);
                 }
                 else if (v <= 95)
                 {
-                    RandomZombie(v, 60, 25, 5, axis, row);
+                    RandomZombie(v, 50, 30, 15, axis, row);
                 }
                 else
                 {
@@ -101,12 +116,20 @@ namespace GoldImitater.BepInEx
                 CreatePlant.Instance.SetPlant(column, row, PlantType.LilyPad, isFreeSet: true);
             if (plant.board.GetBoxType(column, row) == BoxType.Roof)
                 CreatePlant.Instance.SetPlant(column, row, PlantType.Pot, isFreeSet: true);
-            CreatePlant.Instance.SetPlant(column, row, plantType, isFreeSet: true);
+            TryStarUpPlant(CreatePlant.Instance.SetPlant(column, row, plantType, isFreeSet: true).GetComponent<Plant>());
             if (TypeMgr.IsPuff(plantType))
             {
-                CreatePlant.Instance.SetPlant(column, row, plantType, isFreeSet: true);
-                CreatePlant.Instance.SetPlant(column, row, plantType, isFreeSet: true);
+                TryStarUpPlant(CreatePlant.Instance.SetPlant(column, row, plantType, isFreeSet: true).GetComponent<Plant>());
+                TryStarUpPlant(CreatePlant.Instance.SetPlant(column, row, plantType, isFreeSet: true).GetComponent<Plant>());
             }
+        }
+
+        public void TryStarUpPlant(Plant plant)
+        {
+            if (!plant.OnStarUp() || !this.plant.starUp) return;
+            plant.StarUp();
+            plant.starUp = true;
+            plant.UpdateStarIcon();
         }
 
         public void SetRandomZombie(ZombieType zombieType, float x, int row)
@@ -137,22 +160,29 @@ namespace GoldImitater.BepInEx
                         timer = 1.2f;
                         break;
                 }
-                zombie.theHealth = (int)(zombie.theHealth * timer);
-                zombie.theMaxHealth = (int)(zombie.theMaxHealth * timer);
-                zombie.theFirstArmorHealth = (int)(zombie.theFirstArmorHealth * timer);
-                zombie.theFirstArmorMaxHealth = (int)(zombie.theFirstArmorMaxHealth * timer);
-                zombie.theSecondArmorHealth = (int)(zombie.theSecondArmorHealth * timer);
-                zombie.theSecondArmorMaxHealth = (int)(zombie.theSecondArmorMaxHealth * timer);
-                if (zombieType == ZombieType.ZombieBoss || zombieType == ZombieType.ZombieBoss2)
+                int bossMulti = 100;
+                bool flag = zombieType == ZombieType.ZombieBoss || zombieType == ZombieType.ZombieBoss2;
+                if (flag)
+                    if (plant.board.boardTag.isSuperRandom)
+                        bossMulti = 10;
+                if (plant.starUp) bossMulti *= 10;
+                if (flag)
                 {
-                    zombie.theHealth *= 100;
-                    zombie.theMaxHealth *= 100;
+                    zombie.theHealth *= bossMulti;
+                    zombie.theMaxHealth *= bossMulti;
+                    zombie.SetData("GoldImitater_SpawnByGold", true);
                 }
                 if (zombieType == ZombieType.HorseBoss)
                 {
                     zombie.theHealth *= 15;
                     zombie.theMaxHealth *= 15;
                 }
+                zombie.theHealth = (int)(zombie.theHealth * timer);
+                zombie.theMaxHealth = (int)(zombie.theMaxHealth * timer);
+                zombie.theFirstArmorHealth = (int)(zombie.theFirstArmorHealth * timer);
+                zombie.theFirstArmorMaxHealth = (int)(zombie.theFirstArmorMaxHealth * timer);
+                zombie.theSecondArmorHealth = (int)(zombie.theSecondArmorHealth * timer);
+                zombie.theSecondArmorMaxHealth = (int)(zombie.theSecondArmorMaxHealth * timer);
             }
             catch (Exception)
             { }
@@ -240,9 +270,11 @@ namespace GoldImitater.BepInEx
                         else
                         {
                             var list = new List<TravelDebuff>();
-                            foreach (var (id, _) in TravelDictionary.debuffData)
-                                if (!data.travelDebuffs.Contains(id))
-                                    list.Add(id);
+                            foreach (var kvp in TravelDictionary.debuffData)
+                            {
+                                if (!data.travelDebuffs.Contains(kvp.Key))
+                                    list.Add(kvp.Key);
+                            }
                             var debuff = list[UnityEngine.Random.Range(0, list.Count)];
                             data.travelDebuffs.Add(debuff);
                             InGameText.Instance.ShowText($"抽到僵尸词条：{TravelDictionary.debuffData[debuff].Item1}", 5f);
@@ -298,7 +330,7 @@ namespace GoldImitater.BepInEx
         }
     }
 
-    [HarmonyPatch(typeof(CardUI), nameof(CardUI.Start))]
+    /*[HarmonyPatch(typeof(CardUI), nameof(CardUI.Start))]
     public class CardUI_Start_Patch
     {
         public static int loopCount = 0;
@@ -310,22 +342,25 @@ namespace GoldImitater.BepInEx
                 GameObject go = GameObject.Instantiate(__instance.gameObject, __instance.transform.parent);
                 go.transform.position = __instance.transform.position;
                 __instance.CD = __instance.fullCD;
-                go.GetComponent<CardUI>().CD = go.GetComponent<CardUI>().fullCD;
+                var cardui = go.GetComponent<CardUI>();
+                cardui.CD = cardui.fullCD;
+                cardui.parent = __instance.gameObject;
                 loopCount++;
             }
         }
-    }
+    }*/
 
-    [HarmonyPatch(typeof(Board), nameof(Board.Start))]
+    /*[HarmonyPatch(typeof(Board), nameof(Board.Start))]
     public class Board_Start_Patch
     {
         [HarmonyPostfix]
         public static void Postfix() => CardUI_Start_Patch.loopCount = 0;
-    }
+    }*/
 
-    [HarmonyPatch(typeof(ZombieBoss), nameof(ZombieBoss.Start))]
+    [HarmonyPatch(typeof(ZombieBoss))]
     public static class ZombieBossStartPatch
     {
+        [HarmonyPatch(nameof(ZombieBoss.Start))]
         [HarmonyPostfix]
         public static void Postfix(ZombieBoss __instance)
         {
@@ -337,6 +372,16 @@ namespace GoldImitater.BepInEx
             }
             {
                 __instance.healthTextShadow.transform.position = __instance.healthText.transform.position;
+            }
+        }
+
+        [HarmonyPatch(nameof(ZombieBoss.GetDamage))]
+        [HarmonyPostfix]
+        public static void PostGetDamage(ZombieBoss __instance, ref int __result)
+        {
+            if (__instance.GetData<bool>("GoldImitater_SpawnByGold"))
+            {
+                __result = Mathf.Min(__result, 5000);
             }
         }
     }

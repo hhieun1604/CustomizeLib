@@ -10,6 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using static Il2CppSystem.Globalization.TimeSpanFormat;
 
 ///
 ///Credit to likefengzi(https://github.com/likefengzi)(https://space.bilibili.com/237491236)
@@ -147,6 +148,8 @@ namespace CustomizeLib.BepInEx
             if (!Regex.Match(name, @"\(\d+\)$").Success)
                 iName = $"{name}({id})";
             PlantsAlmanac.Add((PlantType)id, (iName, description));
+            var str = Regex.Replace(name, @"[\(（].*[\)）]", "");
+            CustomPlantNames.Add((PlantType)id, str);
         }
 
         /// <summary>
@@ -161,6 +164,8 @@ namespace CustomizeLib.BepInEx
             if (!Regex.Match(name, @"\(\d+\)$").Success)
                 iName = $"{name}({id})";
             ZombiesAlmanac.Add((ZombieType)id, (iName, description));
+            var str = Regex.Replace(name, @"[\(（].*[\)）]", "");
+            CustomZombieNames.Add((ZombieType)id, str);
         }
 
         /// <summary>
@@ -301,29 +306,34 @@ namespace CustomizeLib.BepInEx
             {
                 case BuffType.AdvancedBuff:
                     i = CustomBuffStartID + CustomAdvancedBuffs.Count;
+                    if (buffID != -1) i = buffID;
                     CustomAdvancedBuffs.Add(i, (icon, text, canUnlock, cost, color));
                     TravelDictionary.advancedBuffsText.Add((AdvBuff)i, text);
                     TravelDictionary.AdvBuffPlantPairs.Add((AdvBuff)i, icon);
                     break;
                 case BuffType.UltimateBuff:
                     i = CustomBuffStartID + CustomUltimateBuffs.Count;
+                    if (buffID != -1) i = buffID;
                     CustomUltimateBuffs.Add(i, (icon, text, cost, color));
                     TravelDictionary.ultimateBuffsText.Add((UltiBuff)i, text);
                     break;
                 case BuffType.Debuff:
                     i = CustomBuffStartID + CustomDebuffs.Count;
+                    if (buffID != -1) i = buffID;
                     CustomDebuffs.Add(i, (text, zombieType));
                     TravelDictionary.debuffData.Add((TravelDebuff)i, new Il2CppSystem.ValueTuple<string, ZombieType>(
                         text, zombieType));
                     break;
                 case BuffType.UnlockPlant:
                     i = CustomBuffStartID + CustomUnlockBuffs.Count;
+                    if (buffID != -1) i = buffID;
                     CustomUnlockBuffs.Add(i, (icon, text, cost, color));
                     TravelDictionary.unlocksText.Add((TravelUnlocks)i, text);
                     break;
                 case BuffType.InvestmentBuff: // 投资注册还没写完
                     if (ibuff == null) return -1;
                     i = CustomBuffStartID + CustomInvestBuffs.Count;
+                    if (buffID != -1) i = buffID;
                     CustomInvestBuffs.Add(i, (icon, canUnlock, ibuff));
                     TravelMgr.InvestBuffsData.Add((InvestBuff)i, ibuff);
                     break;
@@ -582,17 +592,26 @@ namespace CustomizeLib.BepInEx
         public static void RegisterCustomPlantSkin<TBase, TClass>([NotNull] int id, [NotNull] GameObject prefab,
             [NotNull] GameObject preview,
             List<(int, int)> fusions, float attackInterval, float produceInterval, int attackDamage, int maxHealth,
-            float cd, int sun, List<(BulletType, GameObject?)>? bulletSkinList = null)
+            float cd, int sun, List<(BulletType, List<GameObject?>)>? bulletSkinList = null)
             where TBase : Plant where TClass : MonoBehaviour
         {
             if (bulletSkinList != null)
             {
-                foreach (var (origin, bullet) in bulletSkinList)
+                foreach (var (origin, list) in bulletSkinList)
                 {
-                    var bulletID = (BulletType)(CustomBulletSkinStartID + CustomSkinBullet.Count);
-                    CustomSkinBullet.Add((origin, bulletID), bullet);
-                    if (!CustomBulletsSkinID.ContainsKey(origin))
-                        CustomBulletsSkinID.Add(origin, bulletID);
+                    foreach (var bullet in list)
+                    {
+                        var bulletID = (BulletType)(CustomBulletSkinStartID + CustomSkinBullet.Count);
+                        if (!CustomSkinBullet.ContainsKey(origin))
+                            CustomSkinBullet.Add(origin, new List<(BulletType, GameObject?)> { (bulletID, bullet) });
+                        else
+                            CustomSkinBullet[origin].Add((bulletID, bullet));
+                        if (!CustomBulletsSkinID.ContainsKey(((PlantType)id, origin)))
+                            CustomBulletsSkinID.Add(((PlantType)id, origin), new List<BulletType> { bulletID });
+                        else
+                            CustomBulletsSkinID[((PlantType)id, origin)].Add(bulletID);
+                        RegisteredSkinBulletCount++;
+                    }
                 }
             }
             //植物预制体挂载植物脚本
@@ -681,17 +700,26 @@ namespace CustomizeLib.BepInEx
         public static void RegisterCustomPlantSkin<TBase>([NotNull] int id, [NotNull] GameObject prefab,
             [NotNull] GameObject preview,
             List<(int, int)> fusions, float attackInterval, float produceInterval, int attackDamage, int maxHealth,
-            float cd, int sun, List<(BulletType, GameObject?)>? bulletSkinList = null)
+            float cd, int sun, List<(BulletType, List<GameObject?>)>? bulletSkinList = null)
             where TBase : Plant
         {
             if (bulletSkinList != null)
             {
-                foreach (var (origin, bullet) in bulletSkinList)
+                foreach (var (origin, list) in bulletSkinList)
                 {
-                    var bulletID = (BulletType)(CustomBulletSkinStartID + CustomSkinBullet.Count);
-                    CustomSkinBullet.Add((origin, bulletID), bullet);
-                    if (!CustomBulletsSkinID.ContainsKey(origin))
-                        CustomBulletsSkinID.Add(origin, bulletID);
+                    foreach (var bullet in list)
+                    {
+                        var bulletID = (BulletType)(CustomBulletSkinStartID + CustomSkinBullet.Count);
+                        if (!CustomSkinBullet.ContainsKey(origin))
+                            CustomSkinBullet.Add(origin, new List<(BulletType, GameObject?)> { (bulletID, bullet) });
+                        else
+                            CustomSkinBullet[origin].Add((bulletID, bullet));
+                        if (!CustomBulletsSkinID.ContainsKey(((PlantType)id, origin)))
+                            CustomBulletsSkinID.Add(((PlantType)id, origin), new List<BulletType> { bulletID });
+                        else
+                            CustomBulletsSkinID[((PlantType)id, origin)].Add(bulletID);
+                        RegisteredSkinBulletCount++;
+                    }
                 }
             }
             prefab.tag = "Plant";
@@ -769,17 +797,26 @@ namespace CustomizeLib.BepInEx
         /// <param name="ctor">数据绑定函数</param>
         /// <param name="bulletSkinList">切换皮肤时切换的皮肤子弹</param>
         public static void RegisterCustomPlantSkin<TBase>([NotNull] int id, [NotNull] GameObject prefab,
-            [NotNull] GameObject preview, Action<TBase> ctor, List<(BulletType, GameObject?)>? bulletSkinList = null)
+            [NotNull] GameObject preview, Action<TBase> ctor, List<(BulletType, List<GameObject?>)>? bulletSkinList = null)
             where TBase : Plant
         {
             if (bulletSkinList != null)
             {
-                foreach (var (origin, bullet) in bulletSkinList)
+                foreach (var (origin, list) in bulletSkinList)
                 {
-                    var bulletID = (BulletType)(CustomBulletSkinStartID + CustomSkinBullet.Count);
-                    CustomSkinBullet.Add((origin, bulletID), bullet);
-                    if (!CustomBulletsSkinID.ContainsKey(origin))
-                        CustomBulletsSkinID.Add(origin, bulletID);
+                    foreach (var bullet in list)
+                    {
+                        var bulletID = (BulletType)(CustomBulletSkinStartID + CustomSkinBullet.Count);
+                        if (!CustomSkinBullet.ContainsKey(origin))
+                            CustomSkinBullet.Add(origin, new List<(BulletType, GameObject?)> { (bulletID, bullet) });
+                        else
+                            CustomSkinBullet[origin].Add((bulletID, bullet));
+                        if (!CustomBulletsSkinID.ContainsKey(((PlantType)id, origin)))
+                            CustomBulletsSkinID.Add(((PlantType)id, origin), new List<BulletType> { bulletID });
+                        else
+                            CustomBulletsSkinID[((PlantType)id, origin)].Add(bulletID);
+                        RegisteredSkinBulletCount++;
+                    }
                 }
             }
             prefab.tag = "Plant";
@@ -831,17 +868,26 @@ namespace CustomizeLib.BepInEx
         /// <param name="bullet">皮肤子弹预制体</param>
         /// <param name="bulletSkinList">切换皮肤时切换的皮肤子弹</param>
         public static void RegisterCustomPlantSkin<TBase, TClass>([NotNull] int id, [NotNull] GameObject prefab,
-            [NotNull] GameObject preview, Action<TBase> ctor, List<(BulletType, GameObject?)>? bulletSkinList = null)
+            [NotNull] GameObject preview, Action<TBase> ctor, List<(BulletType, List<GameObject?>)>? bulletSkinList = null)
             where TBase : Plant where TClass : MonoBehaviour
         {
             if (bulletSkinList != null)
             {
-                foreach (var (origin, bullet) in bulletSkinList)
+                foreach (var (origin, list) in bulletSkinList)
                 {
-                    var bulletID = (BulletType)(CustomBulletSkinStartID + CustomSkinBullet.Count);
-                    CustomSkinBullet.Add((origin, bulletID), bullet);
-                    if (!CustomBulletsSkinID.ContainsKey(origin))
-                        CustomBulletsSkinID.Add(origin, bulletID);
+                    foreach (var bullet in list)
+                    {
+                        var bulletID = (BulletType)(CustomBulletSkinStartID + CustomSkinBullet.Count);
+                        if (!CustomSkinBullet.ContainsKey(origin))
+                            CustomSkinBullet.Add(origin, new List<(BulletType, GameObject?)> { (bulletID, bullet) });
+                        else 
+                            CustomSkinBullet[origin].Add((bulletID, bullet));
+                        if (!CustomBulletsSkinID.ContainsKey(((PlantType)id, origin)))
+                            CustomBulletsSkinID.Add(((PlantType)id, origin), new List<BulletType> { bulletID });
+                        else
+                            CustomBulletsSkinID[((PlantType)id, origin)].Add(bulletID);
+                        RegisteredSkinBulletCount++;
+                    }
                 }
             }
             prefab.tag = "Plant";
@@ -888,10 +934,14 @@ namespace CustomizeLib.BepInEx
         /// <param name="bullet">子弹Prefab</param>
         public static void RegisterCustomSkinBullet(BulletType origin, BulletType bulletType, GameObject bullet)
         {
-            CustomSkinBullet.Add((origin, bulletType), bullet);
+            if (CustomSkinBullet.ContainsKey(origin))
+                CustomSkinBullet[origin].Add((bulletType, bullet));
+            else
+                CustomSkinBullet.Add(origin, new List<(BulletType, GameObject?)> { (bulletType, bullet) });
             GameAPP.resourcesManager.bulletPrefabs[bulletType] = bullet;//注册子弹预制体
             if (!GameAPP.resourcesManager.allBullets.Contains(bulletType))
                 GameAPP.resourcesManager.allBullets.Add(bulletType);//注册子弹类型
+            RegisteredSkinBulletCount++;
         }
 
         /// <summary>
@@ -948,28 +998,28 @@ namespace CustomizeLib.BepInEx
         /// </summary>
         /// <param name="thePlantType">植物类型</param>
         /// <param name="parent">父对象，所有Func的返回值都应为想要设置的父对象</param>
-        public static void RegisterCustomCard([NotNull] PlantType thePlantType, [NotNull] List<Func<Transform?>> parent)
+        public static void RegisterCustomCard([NotNull] PlantType thePlantType, [NotNull] List<Func<Transform?>> parent, int repeatTime = 1)
         {
             if (!CustomCards.ContainsKey(thePlantType))
-                CustomCards.Add(thePlantType, parent);
+                CustomCards.Add(thePlantType, (parent, repeatTime));
             else
                 foreach (Func<Transform?> action in parent)
-                    CustomCards[thePlantType].Add(action);
+                    CustomCards[thePlantType].Item1.Add(action);
         }
 
         /// <summary>
         /// 注册自定义卡牌
         /// </summary>
         /// <param name="thePlantType">植物类型，父对象将在实例化时自动设置</param>
-        public static void RegisterCustomCard([NotNull] PlantType thePlantType)
+        public static void RegisterCustomCard([NotNull] PlantType thePlantType, int repeatTime = 1)
         {
             if (!CustomCards.ContainsKey(thePlantType))
-                CustomCards.Add(thePlantType, new List<Func<Transform?>>()
+                CustomCards.Add(thePlantType, (new List<Func<Transform?>>()
                 {
                     () => Utils.GetNormalCardParent()
-                });
+                }, repeatTime));
             else
-                CustomCards[thePlantType].Add(
+                CustomCards[thePlantType].Item1.Add(
                     () => Utils.GetNormalCardParent());
         }
 
@@ -977,38 +1027,38 @@ namespace CustomizeLib.BepInEx
         /// 注册自定义卡牌
         /// </summary>
         /// <param name="thePlantType">植物类型，父对象将在实例化时自动设置</param>
-        public static void RegisterCustomCardToColorfulCards([NotNull] PlantType thePlantType) => RegisterCustomCard(thePlantType, new List<Func<Transform?>>
+        public static void RegisterCustomCardToColorfulCards([NotNull] PlantType thePlantType, int repeatTime = 1) => RegisterCustomCard(thePlantType, new List<Func<Transform?>>
         {
             () => Utils.GetColorfulCardParent()
-        });
+        }, repeatTime);
 
         /// <summary>
         /// 注册自定义普通卡牌
         /// </summary>
         /// <param name="thePlantType">植物类型</param>
         /// <param name="parent">父对象，所有Func的返回值都应为想要设置的父对象</param>
-        public static void RegisterCustomNormalCard([NotNull] PlantType thePlantType, List<Func<Transform?>> parent)
+        public static void RegisterCustomNormalCard([NotNull] PlantType thePlantType, List<Func<Transform?>> parent, int repeatTime = 1)
         {
             if (!CustomNormalCards.ContainsKey(thePlantType))
-                CustomNormalCards.Add(thePlantType, parent);
+                CustomNormalCards.Add(thePlantType, (parent, repeatTime));
             else
                 foreach (Func<Transform?> action in parent)
-                    CustomNormalCards[thePlantType].Add(action);
+                    CustomNormalCards[thePlantType].Item1.Add(action);
         }
 
         /// <summary>
         /// 注册自定义普通卡牌
         /// </summary>
         /// <param name="thePlantType">植物类型，父对象将在实例化时自动设置</param>
-        public static void RegisterCustomNormalCard([NotNull] PlantType thePlantType)
+        public static void RegisterCustomNormalCard([NotNull] PlantType thePlantType, int repeatTime = 1)
         {
             if (!CustomNormalCards.ContainsKey(thePlantType))
-                CustomNormalCards.Add(thePlantType, new List<Func<Transform?>>()
+                CustomNormalCards.Add(thePlantType, (new List<Func<Transform?>>()
                 {
                     () => Utils.GetNormalCardParent()
-                });
+                }, repeatTime));
             else
-                CustomNormalCards[thePlantType].Add(
+                CustomNormalCards[thePlantType].Item1.Add(
                     () => Utils.GetNormalCardParent());
         }
 
@@ -1195,12 +1245,16 @@ namespace CustomizeLib.BepInEx
         /// </summary>
         /// <param name="id">类型</param>
         /// <param name="prefab">樱桃爆炸预制体</param>
-        public static void RegisterCustomCherry(CherryBombType id, [NotNull] GameObject prefab) => RegisterCustomCherry<BombCherry>(id, prefab);
+        public static void RegisterCustomCherry(CherryBombType id, [NotNull] GameObject prefab)
+        {
+            RegisterCustomParticle((ParticleType)(CustomCherryStartID + (int)id), prefab);
+            CustomCherrys.Add(id, prefab);
+        }
 
         /// <summary>
         /// 注册自定义樱桃爆炸
         /// </summary>
-        /// <typeparam name="T">自定义樱桃爆炸类型</typeparam>
+        /// <typeparam name="T">樱桃爆炸组件</typeparam>
         /// <param name="id">类型</param>
         /// <param name="prefab">樱桃爆炸预制体</param>
         public static void RegisterCustomCherry<T>(CherryBombType id, [NotNull] GameObject prefab) where T : MonoBehaviour
@@ -1208,6 +1262,7 @@ namespace CustomizeLib.BepInEx
             if (!ClassInjector.IsTypeRegisteredInIl2Cpp<T>())
                 ClassInjector.RegisterTypeInIl2Cpp<T>();
             prefab.AddComponent<T>();
+            RegisterCustomParticle((ParticleType)(CustomCherryStartID + (int)id), prefab);
             CustomCherrys.Add(id, prefab);
         }
 
@@ -1234,12 +1289,12 @@ namespace CustomizeLib.BepInEx
         /// <param name="func">判断条件</param>
         /// <param name="success">融合成功执行函数</param>
         /// <param name="fail">融合失败执行函数</param>
-        public static void RegisterCustomFailMixEvent([NotNull] PlantType plantType, Func<bool>? func = null, Action? success = null, Action? fail = null)
+        public static void RegisterCustomBanMix([NotNull] PlantType plantType, Func<bool>? func = null, Action? success = null, Action? fail = null)
         {
-            if (!CustomFailMix.ContainsKey(plantType))
-                CustomFailMix.Add(plantType, (func, success, fail));
+            if (!CustomBanMix.ContainsKey(plantType))
+                CustomBanMix.Add(plantType, (func, success, fail));
             else
-                CLogger.LogError($"Duplicate fail mix plant type: {plantType}");
+                CLogger.LogError($"Duplicate ban mix plant type: {plantType}");
         }
 
         /// <summary>
@@ -1265,18 +1320,24 @@ namespace CustomizeLib.BepInEx
         /// <param name="action">融合事件</param>
         public static void RegisterCustomOnMixEvent(PlantType baseType, PlantType newType, Action<Plant> action) =>
             RegisterCustomOnMixEvent(baseType, newType, new List<Action<Plant>> { action });
+
+        public static void AddPlantName(PlantType plantType, string name) => CustomPlantNames.Add(plantType, name);
+        public static void AddZombieName(ZombieType zombieType, string name) => CustomZombieNames.Add(zombieType, name);
+
         public override void Load()
         {
             ClassInjector.RegisterTypeInIl2Cpp<CustomPlantMonoBehaviour>();
             ClassInjector.RegisterTypeInIl2Cpp<SelectCustomPlants>();
             ClassInjector.RegisterTypeInIl2Cpp<CheckCardState>();
             ClassInjector.RegisterTypeInIl2Cpp<ExtensionDataComponent>();
+            ClassInjector.RegisterTypeInIl2Cpp<CoreBehaviour>();
+            ClassInjector.RegisterTypeInIl2Cpp<PositionRecorder>();
 
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
             Instance = new(this);
             CLogger = this.Log;
 
-
+            CoreTools.Init();
             /*EnumInjector.InjectEnumValues<AdvBuff>(new Dictionary<string, object>()
             {
                 { "EnumValueAAA", 999 }
@@ -1327,20 +1388,6 @@ namespace CustomizeLib.BepInEx
 
         public static Dictionary<int, (PlantType, string, int, string?)> CustomUltimateBuffs { get; set; } = [];
 
-#if DEBUG_FEATURE__ENABLE_MULTI_LEVEL_BUFF
-        #region 多级词条相关字典
-        /// <summary>
-        /// 自定义词条最高等级列表
-        /// </summary>
-        public static Dictionary<(BuffType, int, int), int> CustomBuffsLevel { get; set; } = []; // 词条类型, 字典索引, 分配ID, 最大等级
-
-        /// <summary>
-        /// 存各种杂七杂八的数据
-        /// </summary>
-        public static object[] variables = new object[10];
-        #endregion
-#endif
-
         public static Dictionary<(PlantType, BucketType), Action<Plant>> CustomUseItems { get; set; } = [];
 
 
@@ -1352,12 +1399,12 @@ namespace CustomizeLib.BepInEx
         /// <summary>
         /// 自定义彩色卡牌列表
         /// </summary>
-        public static Dictionary<PlantType, List<Func<Transform?>>> CustomCards { get; set; } = [];
+        public static Dictionary<PlantType, (List<Func<Transform?>>, int)> CustomCards { get; set; } = [];
 
         /// <summary>
         /// 自定义普通卡牌列表
         /// </summary>
-        public static Dictionary<PlantType, List<Func<Transform?>>> CustomNormalCards { get; set; } = [];
+        public static Dictionary<PlantType, (List<Func<Transform?>>, int)> CustomNormalCards { get; set; } = [];
 
         public static Dictionary<ZombieType, (GameObject, int, ZombieDataManager.ZombieData)> CustomZombies { get; set; } = [];
 
@@ -1432,7 +1479,7 @@ namespace CustomizeLib.BepInEx
         /// <summary>
         /// 自定义融合条件列表 植物类型-(是否成功, 成功事件, 失败事件)
         /// </summary>
-        public static Dictionary<PlantType, (Func<bool>?, Action?, Action?)> CustomFailMix { get; set; } = [];
+        public static Dictionary<PlantType, (Func<bool>?, Action?, Action?)> CustomBanMix { get; set; } = [];
 
         /// <summary>
         /// 自定义植物融合事件 (底植物,融合植物)-触发事件(融合后植物)
@@ -1475,22 +1522,48 @@ namespace CustomizeLib.BepInEx
 
         #region 皮肤子弹
         /// <summary>
-        /// 自定义皮肤子弹列表 ((植物类型, 在SkinDic中的索引), (原来的子弹类型, 替换后的子弹类型))
+        /// 自定义皮肤子弹列表 ((植物类型, 在SkinDic中的索引), (原来的子弹类型, 替换后的子弹类型列表(所有可能随机出来的)))
         /// </summary>
-        public static Dictionary<(PlantType, int), List<(BulletType, BulletType)>> CustomBulletSkinReplace { get; set; } = new();
+        public static Dictionary<(PlantType, int), Dictionary<BulletType, List<BulletType>>> CustomBulletSkinReplace { get; set; } = new();
 
         /// <summary>
-        /// 自定义皮肤子弹列表 (原子弹类型，新子弹类型)
+        /// 自定义皮肤子弹列表 (原子弹类型，对应的所有新子弹类型)
         /// </summary>
-        public static Dictionary<BulletType, BulletType> CustomBulletsSkinID { get; set; } = new();
+        public static Dictionary<(PlantType, BulletType), List<BulletType>> CustomBulletsSkinID { get; set; } = new();
 
         /// <summary>
-        /// 自定义皮肤子弹类型 ((原子弹类型, 新子弹类型), 子弹预制体)
+        /// 自定义皮肤子弹类型 (原子弹类型, 所有对应的(新子弹类型, 子弹预制体))
         /// </summary>
-        public static Dictionary<(BulletType, BulletType), GameObject?> CustomSkinBullet { get; set; } = new();
+        public static Dictionary<BulletType, List<(BulletType, GameObject?)>> CustomSkinBullet { get; set; } = new();
 
         public static int CustomBulletSkinStartID = 2750;
+
+        public static int RegisteredSkinBulletCount = 0;
         #endregion
+
+        /// <summary>
+        /// 已启用的自定义皮肤
+        /// </summary>
+        public static Dictionary<PlantType, bool> EnableSkin { get; set; } = new();
+
+        /// <summary>
+        /// 自定义皮肤 类型-索引 列表
+        /// </summary>
+        public static Dictionary<PlantType, List<int>> CustomPlantSkinIndex { get; set; } = new();
+
+        public static List<AssetBundle> LoadedSkinAssetBundle { get; set; } = new();
+
+        public static int CustomCherryStartID = 2000;
+
+        /// <summary>
+        /// 二创植物名称
+        /// </summary>
+        public static Dictionary<PlantType, string> CustomPlantNames { get; set; } = new();
+
+        /// <summary>
+        /// 二创僵尸名称
+        /// </summary>
+        public static Dictionary<ZombieType, string> CustomZombieNames { get; set; } = new();
         // public static List<PlantType> CustomWeakUltimatePlant = new();
     }
 }

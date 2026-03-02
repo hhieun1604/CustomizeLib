@@ -81,7 +81,7 @@ namespace DoomGatlingBlover.BepInEx
 
                 GameAPP.PlaySound(UnityEngine.Random.Range(3, 5), 0.5f, 1.0f);
 
-                if (Lawnf.TravelAdvanced((AdvBuff)51))
+                if (Lawnf.TravelAdvanced(CoreTools.GetAdvBuffByString("火力全开")))
                 {
                     Bullet up = CreateBullet.Instance.SetBullet(plant.shoot.position.x, plant.shoot.position.y, plant.thePlantRow, (BulletType)PlantID, BulletMoveWay.Sin, false);
                     up.Damage = plant.attackDamage;
@@ -93,11 +93,11 @@ namespace DoomGatlingBlover.BepInEx
                     down.theExistTime = 0.5f;
                 }
 
-                if (Lawnf.TravelAdvanced((AdvBuff)63))
+                if (Lawnf.TravelAdvanced(CoreTools.GetAdvBuffByString("Rogue_究极樱桃射手专精I")))
                 {
                     bullet.rogueStatus = 1;
                 }
-                else if (Lawnf.TravelAdvanced((AdvBuff)64))
+                else if (Lawnf.TravelAdvanced(CoreTools.GetAdvBuffByString("Rogue_究极樱桃射手专精II")))
                 {
                     bullet.rogueStatus = 2;
                 }
@@ -173,7 +173,7 @@ namespace DoomGatlingBlover.BepInEx
             {
                 if (zombie.isSmall)
                     __instance.Damage *= 2;
-                if (Lawnf.TravelAdvanced((AdvBuff)51))
+                if (Lawnf.TravelAdvanced(CoreTools.GetAdvBuffByString("火力全开")))
                 {
                     var collider = Physics2D.OverlapCircleAll(__instance.transform.position, 1.5f, zombie.zombieLayer);
                     foreach (var c in collider)

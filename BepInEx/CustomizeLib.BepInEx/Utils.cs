@@ -59,7 +59,7 @@ namespace CustomizeLib.BepInEx
         public GameObject Prefab { get; set; }
         public GameObject Preview { get; set; }
 
-        public List<(BulletType, GameObject?)>? BulletList { get; set; }
+        public List<(BulletType, List<GameObject?>)>? BulletList { get; set; }
     }
 
     /// <summary>
@@ -773,7 +773,7 @@ namespace CustomizeLib.BepInEx
             if (Board.Instance is not null && !Board.Instance.isIZ)
             {
                 GameObject? MyCard = null;
-                MyCard = InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/ColorfulCards/Page1/CattailGirl").gameObject;
+                MyCard = InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer/ColorfulCards/Page1/CattailGirl").gameObject;
                 #region disable
                 /*int value = 0;
                 GameObject? MyPage = null;
@@ -826,7 +826,7 @@ namespace CustomizeLib.BepInEx
             if (Board.Instance is not null && !Board.Instance.isIZ)
             {
                 GameObject? MyCard = null;
-                MyCard = InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/Pages/Page1/PeaShooter").gameObject;
+                MyCard = InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer/NormalCards/Page1/PeaShooter").gameObject;
                 return MyCard;
             }
             else if (Board.Instance is not null && Board.Instance.isIZ)
@@ -846,7 +846,7 @@ namespace CustomizeLib.BepInEx
         {
             if (Board.Instance != null && !Board.Instance.isIZ)
             {
-                return InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/ColorfulCards/Page1");
+                return InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer/ColorfulCards/Page1");
             }
             else if (Board.Instance != null && Board.Instance.isIZ)
             {
@@ -859,11 +859,11 @@ namespace CustomizeLib.BepInEx
         {
             if (Board.Instance != null && Board.Instance.boardTag.isTowerDefence)
             {
-                return InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/TowerCard/Page1");
+                return InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer/TowerCard/Page1");
             }
             else if (Board.Instance != null && !Board.Instance.isIZ)
             {
-                return InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/Pages/Page1");
+                return InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer/Pages/Page1");
             }
             else if (Board.Instance != null && Board.Instance.isIZ)
             {
@@ -871,45 +871,6 @@ namespace CustomizeLib.BepInEx
             }
             return null;
         }
-
-#if DEBUG_FEATURE__ENABLE_MULTI_LEVEL_BUFF
-        #region 多级词条相关方法
-        /// <summary>
-        /// 获取自定义词条等级
-        /// </summary>
-        /// <param name="buffType">词条类型</param>
-        /// <param name="returnID">注册词条时返回的ID</param>
-        /// <returns>自定义词条等级</returns>
-        public static int TravelCustomLevel(BuffType buffType, int returnID)
-        {
-            if (TravelMgr.Instance is null)
-                return 0;
-            var result = IsMultiLevelBuff(buffType, returnID);
-            foreach (var value in result.Item2)
-            {
-                int index = (int)CustomCore.variables[0] + value.Item2;
-                Il2CppStructArray<int> upgrades = TravelMgr.Instance.ultimateUpgrades;
-                return upgrades[index];
-            }
-            return 0;
-        }
-
-        /// <summary>
-        /// 自定义词条是否是多级词条
-        /// </summary>
-        /// <param name="buffType">词条类型</param>
-        /// <param name="id">对应的数组的ID（索引），即注册词条是返回的ID</param>
-        /// <returns>Item1: 是否是多级词条, Item2: 符合条件的所有词条的列表</returns>
-        public static (bool, List<(BuffType, int, int)>) IsMultiLevelBuff(BuffType buffType, int returnID)
-        {
-            var list = CustomCore.CustomBuffsLevel.
-                    Where(kvp => kvp.Key.Item1 == buffType && kvp.Key.Item3 == returnID && kvp.Value != 1).
-                    Select(kvp => kvp.Key).
-                    ToList();
-            return (list.Count > 0, list);
-        }
-    #endregion
-#endif
 
         /// <summary>
         /// 自定义词条是否是多级词条
@@ -941,6 +902,15 @@ namespace CustomizeLib.BepInEx
                 return array[result.Item2];
             }
             return 0;
+        }
+
+        public static bool IsCheat()
+        {
+            return GameAPP.developerMode;
+        }
+        public static bool EnableTravelPlant()
+        {
+            return Board.Instance.boardTag.enableAllTravelPlant || Board.Instance.boardTag.isSuperRandom || Board.Instance.boardTag.isUltimateSuperRandom || IsCheat() || Board.Instance.boardTag.isTravel;
         }
     }
 

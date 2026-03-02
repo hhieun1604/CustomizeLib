@@ -72,7 +72,11 @@ namespace SuperShovelLevel.BepInEx
                 plantList.Remove(PlantType.Extract_ten);
                 plantList.Remove(PlantType.MagnetBox);
                 plantList.Remove(PlantType.MagnetInterface);
-                Lawnf.SetDroppedCard(__instance.axis.transform.position, plantList[UnityEngine.Random.Range(0, plantList.Count)], 50);
+                var card = Lawnf.SetDroppedCard(__instance.axis.transform.position, plantList[UnityEngine.Random.Range(0, plantList.Count)], UnityEngine.Random.Range(0, 101));
+                float randomValue = UnityEngine.Random.Range(0f, 1f);
+                int result = Mathf.FloorToInt(8 * randomValue * randomValue) + 1;
+                result = Mathf.Clamp(result, 1, 8);
+                card.maxUsedTimes = result; // 随机1~8的值，越大概率越小
 
                 if (UnityEngine.Random.Range(0, 100) <= 2)
                 {

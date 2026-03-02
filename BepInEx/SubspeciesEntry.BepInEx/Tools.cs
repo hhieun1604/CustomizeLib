@@ -48,4 +48,55 @@ namespace SubspeciesEntry.BepInEx
             throw new ArgumentException($"Could not find {name} from {ab.name}");
         }
     }
+
+    public static class CoreTools
+    {
+        public static Dictionary<string, AdvBuff> AdvBuffPair = new();
+        public static Dictionary<string, UltiBuff> UltiBuffPair = new();
+
+        public static void Init()
+        {
+            foreach (var (buff, str) in TravelDictionary.advancedBuffsText)
+            {
+                int index = str.IndexOf('：');
+                if (index == -1)
+                    index = str.IndexOf(":");
+                if (index != -1)
+                {
+                    if (!AdvBuffPair.ContainsKey(str.Substring(0, index)))
+                        AdvBuffPair.Add(str.Substring(0, index), buff);
+                }
+            }
+
+            foreach (var (buff, str) in TravelDictionary.ultimateBuffsText)
+            {
+                int index = str.IndexOf('：');
+                if (index == -1)
+                    index = str.IndexOf(":");
+                if (index != -1)
+                {
+                    if (!UltiBuffPair.ContainsKey(str.Substring(0, index)))
+                        UltiBuffPair.Add(str.Substring(0, index), buff);
+                }
+            }
+        }
+
+        public static AdvBuff GetAdvBuffByString(string name)
+        {
+            if (AdvBuffPair.ContainsKey(name))
+                return AdvBuffPair[name];
+            return (AdvBuff)(-1);
+        }
+
+        public static UltiBuff GetUltiBuffByString(string name)
+        {
+            if (UltiBuffPair.ContainsKey(name))
+                return UltiBuffPair[name];
+            return (UltiBuff)(-1);
+        }
+
+        public static bool TravelAdvanced(string name) => Lawnf.TravelAdvanced(GetAdvBuffByString(name));
+        public static bool TravelUltimate(string name) => Lawnf.TravelUltimate(GetUltiBuffByString(name));
+        public static int TravelUltimateLevel(string name) => Lawnf.TravelUltimateLevel(GetUltiBuffByString(name));
+    }
 }

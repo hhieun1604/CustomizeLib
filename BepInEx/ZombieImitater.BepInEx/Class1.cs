@@ -40,7 +40,7 @@ namespace ZombieImitater.BepInEx
                 "<color=#3D1400>特殊强化：</color><color=red>①<Boss>僵王博士：血量x100\n" +
                 "②<Boss>黄金僵王博士：血量x100\n" +
                 "③<Boss>黑橄榄大帅：血量x15</color>\n\n" +
-                "<color=#3D1400>宝开🐟</color>\n\n" +
+                "<color=#3D1400>僵尸模仿者曾蝉联“僵尸和我差几分”比赛的冠军，他在这方面的造诣，其他植物只能望其项背，“曾经有一场比赛，我遇到了一株植物，他的伪装术与我不分伯仲，裁判准备让我们并列第一，那个时候，我做了一件事，获得了比赛的第一，并且让他们失去了接着挑战我的勇气，那也是那个比赛的最后一届，”僵尸模仿者看着台下的植物，“我走到了赛场外，面对尸群，他们没有咬我。”</color>\n\n" +
                 "<color=#955300>价格：</color><color=red>-500</color>\n" +
                 "<color=#955300>冷却：</color><color=red>30秒</color>"); 
             CustomCore.AddPlantAlmanacStrings(ZombieImitater.PlantIDRed, $"红眼僵尸模仿者",
@@ -48,10 +48,10 @@ namespace ZombieImitater.BepInEx
                 "<color=#3D1400>贴图作者：@林秋-AutumnLin</color>\n" +
                 "<color=#3D1400>使用条件：</color><color=red>种植僵尸模仿者时有50%变异</color>\n" +
                 "<color=#3D1400>特点：</color><color=red>拥有僵尸模仿者的全部特点</color>\n\n" +
-                "<color=#3D1400>宝开fish</color>\n\n" +
+                "<color=#3D1400>红眼僵尸模仿者的眼睛，其实是最后一届“僵尸和我差几分”比赛获胜者的奖品，据说这对美瞳，是真材实料。</color>\n\n" +
                 "<color=#955300>价格：</color><color=red>-500</color>\n" +
                 "<color=#955300>冷却：</color><color=red>30秒</color>");
-            CustomCore.RegisterCustomCardToColorfulCards((PlantType)ZombieImitater.PlantID);
+            CustomCore.RegisterCustomCardToColorfulCards((PlantType)ZombieImitater.PlantID, 14);
         }
     }
 
@@ -61,6 +61,21 @@ namespace ZombieImitater.BepInEx
         public static ID PlantIDRed = 1961;
 
         public Imitater plant => gameObject.GetComponent<Imitater>();
+
+        public void Start()
+        {
+            int total = 0;
+            var config = GameAPP.config;
+            if (config.levelZombieInRandom) total += 2;
+            if (config.strongUltiZombieInRandom) total += 2;
+            if (config.leaderInRandom) total += 6;
+            if (GameAPP.theGameStatus == GameStatus.InGame && plant != null && UnityEngine.Random.Range(1, 101) <= total && (plant.board.boardTag.isSuperRandom || plant.board.isIZ))
+            {
+                plant.StarUp();
+                plant.starUp = true;
+                plant.UpdateStarIcon();
+            }
+        }
 
         public void AnimSpawn()
         {
@@ -107,9 +122,11 @@ namespace ZombieImitater.BepInEx
                 if (v <= 80) // 僵尸
                 {
                     var list = new List<TravelDebuff>();
-                    foreach (var (id, _) in TravelDictionary.debuffData)
-                        if (!data.travelDebuffs.Contains(id))
-                            list.Add(id);
+                    foreach (var kvp in TravelDictionary.debuffData)
+                    {
+                        if (!data.travelDebuffs.Contains(kvp.Key))
+                            list.Add(kvp.Key);
+                    }
                     var debuff = list[UnityEngine.Random.Range(0, list.Count)];
                     data.travelDebuffs.Add(debuff);
                     InGameText.Instance.ShowText($"抽到僵尸词条：{TravelDictionary.debuffData[debuff].Item1}", 5f);
@@ -157,6 +174,8 @@ namespace ZombieImitater.BepInEx
                 var zombie = CreateZombie.Instance.SetZombie(nR, type, x).GetComponent<Zombie>();
                 Board.Instance.isEveStarted = tmp;
                 if (zombie == null) return;
+                if (type == ZombieType.ZombieBoss || type == ZombieType.ZombieBoss2)
+                    zombie.AddComponent<ClearCold>().zombie = zombie;
                 float timer = 1f;
                 switch (UnityEngine.Random.Range(0, 3))
                 {
@@ -167,22 +186,29 @@ namespace ZombieImitater.BepInEx
                         timer = 1.2f;
                         break;
                 }
-                zombie.theHealth = (int)(zombie.theHealth * timer);
-                zombie.theMaxHealth = (int)(zombie.theMaxHealth * timer);
-                zombie.theFirstArmorHealth = (int)(zombie.theFirstArmorHealth * timer);
-                zombie.theFirstArmorMaxHealth = (int)(zombie.theFirstArmorMaxHealth * timer);
-                zombie.theSecondArmorHealth = (int)(zombie.theSecondArmorHealth * timer);
-                zombie.theSecondArmorMaxHealth = (int)(zombie.theSecondArmorMaxHealth * timer);
-                if (type == ZombieType.ZombieBoss || type == ZombieType.ZombieBoss2)
+                int bossMulti = 100;
+                bool flag = type == ZombieType.ZombieBoss || type == ZombieType.ZombieBoss2;
+                if (flag)
+                    if (plant.board.boardTag.isSuperRandom)
+                        bossMulti = 10;
+                if (plant.starUp) bossMulti *= 10;
+                if (flag)
                 {
-                    zombie.theHealth *= 100;
-                    zombie.theMaxHealth *= 100;
+                    zombie.theHealth *= bossMulti;
+                    zombie.theMaxHealth *= bossMulti;
+                    zombie.SetData("ZombieImitater_SpawnByZombie", true);
                 }
                 if (type == ZombieType.HorseBoss)
                 {
                     zombie.theHealth *= 15;
                     zombie.theMaxHealth *= 15;
                 }
+                zombie.theHealth = (int)(zombie.theHealth * timer);
+                zombie.theMaxHealth = (int)(zombie.theMaxHealth * timer);
+                zombie.theFirstArmorHealth = (int)(zombie.theFirstArmorHealth * timer);
+                zombie.theFirstArmorMaxHealth = (int)(zombie.theFirstArmorMaxHealth * timer);
+                zombie.theSecondArmorHealth = (int)(zombie.theSecondArmorHealth * timer);
+                zombie.theSecondArmorMaxHealth = (int)(zombie.theSecondArmorMaxHealth * timer);
             }
             catch (Exception)
             { }
@@ -234,7 +260,7 @@ namespace ZombieImitater.BepInEx
         [HarmonyPrefix]
         public static void Prefix(DroppedCard __instance)
         {
-            if (__instance.existTime + Time.deltaTime >= 15f && GameAPP.theGameStatus == GameStatus.InGame && Time.timeScale > 0f && __instance.thePlantType == ZombieImitater.PlantID)
+            if (__instance.existTime + Time.deltaTime >= 15f && GameAPP.theGameStatus == GameStatus.InGame && Time.timeScale > 0f && (__instance.thePlantType == ZombieImitater.PlantID || __instance.thePlantType == ZombieImitater.PlantIDRed))
             {
                 for (int i = 4; i < Board.Instance.columnNum; i++) // 列
                 {
@@ -266,34 +292,10 @@ namespace ZombieImitater.BepInEx
         }
     }
 
-    [HarmonyPatch(typeof(CardUI), nameof(CardUI.Start))]
-    public class CardUI_Start_Patch
-    {
-        public static int loopCount = 0;
-        [HarmonyPrefix]
-        public static void Postfix(CardUI __instance)
-        {
-            if (__instance.thePlantType == (PlantType)ZombieImitater.PlantID && loopCount < 14)
-            {
-                GameObject go = GameObject.Instantiate(__instance.gameObject, __instance.transform.parent);
-                go.transform.position = __instance.transform.position;
-                __instance.CD = __instance.fullCD;
-                go.GetComponent<CardUI>().CD = go.GetComponent<CardUI>().fullCD;
-                loopCount++;
-            }
-        }
-    }
-
-    [HarmonyPatch(typeof(Board), nameof(Board.Start))]
-    public class Board_Start_Patch
-    {
-        [HarmonyPostfix]
-        public static void Postfix() => CardUI_Start_Patch.loopCount = 0;
-    }
-
-    [HarmonyPatch(typeof(ZombieBoss), nameof(ZombieBoss.Start))]
+    [HarmonyPatch(typeof(ZombieBoss))]
     public static class ZombieBossStartPatch
     {
+        [HarmonyPatch(nameof(ZombieBoss.Start))]
         [HarmonyPostfix]
         public static void Postfix(ZombieBoss __instance)
         {
@@ -305,6 +307,16 @@ namespace ZombieImitater.BepInEx
             }
             {
                 __instance.healthTextShadow.transform.position = __instance.healthText.transform.position;
+            }
+        }
+
+        [HarmonyPatch(nameof(ZombieBoss.GetDamage))]
+        [HarmonyPostfix]
+        public static void PostGetDamage(ZombieBoss __instance, ref int __result)
+        {
+            if (__instance.GetData<bool>("ZombieImitater_SpawnByZombie"))
+            {
+                __result = Mathf.Min(__result, 5000);
             }
         }
     }

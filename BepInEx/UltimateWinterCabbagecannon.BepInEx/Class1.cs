@@ -5,6 +5,7 @@ using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UltimateWinterCabbagecannon.BepInEx
 {
@@ -48,8 +49,7 @@ namespace UltimateWinterCabbagecannon.BepInEx
                 "<color=#3D1400>“我一直都在尝试接近那个临界点，绝对零度。”究极冷寂迫击炮一生都在研究如何让温度降到最低，他尝试过多种方法却总是失败，“似乎有什么力量在阻止我接近它，它就像一株荷花静静的矗立在那里，只可远观不可亵玩。”究极冷寂迫击炮知道，自己越接近它，也会越害怕，“我不知道靠近它甚至是融合它会有怎样的结果，但是我愿意承担这个结果，我不会放弃，也不会马虎。”</color>"
             );
             CustomCore.AddFusion((int)PlantType.UltimateCannon, (int)UltimateWinterCabbagecannon.PlantID, (int)PlantType.Cornpult);
-            ab.GetAsset<GameObject>("IceDoomCabbageBomb").AddComponent<BombCherry>();
-            CustomCore.RegisterCustomParticle(UltimateWinterCabbagecannon.ParticleID, ab.GetAsset<GameObject>("IceDoomCabbageBomb"));
+            CustomCore.RegisterCustomCherry(UltimateWinterCabbagecannon.BombID, ab.GetAsset<GameObject>("IceDoomCabbageBomb"));
             CustomCore.TypeMgrExtra.IsIcePlant.Add(UltimateWinterCabbagecannon.PlantID);
             CustomCore.TypeMgrExtra.DoubleBoxPlants.Add(UltimateWinterCabbagecannon.PlantID);
             CustomCore.AddUltimatePlant(UltimateWinterCabbagecannon.PlantID);
@@ -66,7 +66,7 @@ namespace UltimateWinterCabbagecannon.BepInEx
     {
         public static PlantType PlantID = (PlantType)1956;
         public static BulletType BulletID = (BulletType)1956;
-        public static ParticleType ParticleID = (ParticleType)1956;
+        public static CherryBombType BombID = (CherryBombType)1956;
         public static GameObject? sub = null;
 
         public CabbageCannon plant => gameObject.GetComponent<CabbageCannon>();
@@ -201,12 +201,17 @@ namespace UltimateWinterCabbagecannon.BepInEx
                     else
                         z.TakeDamage(DmgType.Carred, damage * 8, plantType);
                 };
-                var cherry = board?.CreateCherryExplode(transform.position, row, CherryBombType.IceCharry, fromType: plantType, action: action);
-                if (cherry == null) Destroy(gameObject);
+                var cherry = CoreTools.CreateCherryExplode(transform.position, row, CherryBombType.IceCharry, fromType: plantType, action: action, immediately: false).Item1;
+                if (cherry == null)
+                {
+                    Destroy(gameObject);
+                    return;
+                };
                 cherry.range = 1.5f;
                 cherry.fromType = plantType;
-                cherry.explodeDamage = damage;
+                cherry.damageToZombie = damage;
                 cherry.maxRow = 1;
+                cherry.Explode();
             }
             Destroy(gameObject);
         }
@@ -216,29 +221,165 @@ namespace UltimateWinterCabbagecannon.BepInEx
     public static class CabbageCannonPatch
     {
         [HarmonyPatch(nameof(CabbageCannon.Shoot1))]
-        [HarmonyPostfix]
-        public static void PostShoot(CabbageCannon __instance)
-        {
-            if (__instance != null && __instance.thePlantType == UltimateWinterCabbagecannon.PlantID && UnityEngine.Random.Range(0, 100) < 5 && __instance.attributeCountdown <= 0f)
-            {
-                __instance.anim.SetTrigger("super");
-            }
-        }
-    }
-
-    [HarmonyPatch(typeof(CabbageCannon))]
-    public static class CabbageCannonPatch1
-    {
-        [HarmonyPatch(nameof(CabbageCannon.GetBulletType))]
         [HarmonyPrefix]
-        public static bool Prefix(CabbageCannon __instance, ref BulletType __result)
+        public static bool PreShoot1(CabbageCannon __instance, ref Bullet __result)
         {
-            if (__instance.thePlantType == UltimateWinterCabbagecannon.PlantID)
+            try
             {
-                __result = UltimateWinterCabbagecannon.BulletID;
+                if (__instance.thePlantType != UltimateWinterCabbagecannon.PlantID)
+                    return true;
+                // 创建临时列表存储目标僵尸
+                var targetZombies = new List<Zombie>();
+
+                // 获取棋盘上的所有僵尸
+                var allZombies = __instance.board.zombieArray;
+
+                // 遍历所有僵尸，筛选出符合条件的
+                foreach (var zombie in allZombies)
+                {
+                    if (zombie != null)
+                    {
+                        // 检查僵尸行与植物行的距离是否小于等于1，并且僵尸可以被瞄准
+                        if (Mathf.Abs(zombie.theZombieRow - __instance.thePlantRow) <= 1 && Thrower.ThrowSearchZombie(zombie))
+                        {
+                            // 检查僵尸是否在植物右侧
+                            if (zombie.axis.position.x > __instance.axis.position.x)
+                            {
+                                targetZombies.Add(zombie);
+                            }
+                        }
+                    }
+                }
+
+                // 获取射击点的位置
+                Vector3 shootPos = __instance.shoot.position;
+
+                // 检查是否有雨伞叶保护植物
+                var tuple = __instance.FindUmbrella(shootPos);
+                var umbrellaPos = tuple.Item1;
+                var umbrellaPlant = tuple.Item2;
+                // 存储射击起始位置
+                float startX = shootPos.x;
+                float startY = shootPos.y;
+
+                // 如果有雨伞叶保护
+                if (umbrellaPos != null && umbrellaPlant != null)
+                {
+                    // 再次遍历目标僵尸
+                    foreach (var zombie in targetZombies)
+                    {
+                        // 添加随机偏移
+                        float offsetX = startX + UnityEngine.Random.Range(-0.3f, 0.3f);
+                        float offsetY = startY + UnityEngine.Random.Range(-0.3f, 0.3f);
+
+                        // 检查僵尸是否在雨伞叶右侧
+                        if (zombie.axis.position.x > umbrellaPlant.axis.position.x)
+                        {
+                            // 计算弹道
+                            Vector2 mouseClickPos = MousePositionDebug.instance.GetMouseClickPosition(0.3f);
+                            float[] trajectory = Lawnf.CalculateProjectileWithSpeed(
+                                new Vector2(offsetX, offsetY),
+                                mouseClickPos,
+                                new Vector2(umbrellaPlant.axis.position.x, umbrellaPlant.axis.position.y),
+                                __instance.flightTime
+                            );
+
+                            // 创建子弹
+                            Bullet bullet = CreateBullet.Instance.SetBullet(
+                                offsetX,
+                                offsetY,
+                                __instance.thePlantRow,
+                                UltimateWinterCabbagecannon.BulletID,
+                                BulletMoveWay.Throw,
+                                false
+                            );
+
+                            // 设置子弹轨迹参数
+                            bullet.Vx = trajectory[1];
+                            bullet.Vy = trajectory[2];
+                            bullet.detaVy = -trajectory[3];
+                            bullet.targetPlant = umbrellaPlant;
+                            bullet.Damage = __instance.attackDamage;
+                            bullet.fromType = __instance.thePlantType;
+                        }
+                        else
+                        {
+                            // 直接瞄准僵尸
+                            Vector2 zombieVel = zombie.Velocity;
+                            Vector2 zombiePos = zombie.ColliderPosition;
+
+                            float[] trajectory = Lawnf.CalculateProjectileWithSpeed(
+                                new Vector2(offsetX, offsetY),
+                                zombieVel,
+                                zombiePos,
+                                __instance.flightTime
+                            );
+
+                            Bullet bullet = CreateBullet.Instance.SetBullet(
+                                offsetX,
+                                offsetY,
+                                zombie.theZombieRow,
+                                UltimateWinterCabbagecannon.BulletID,
+                                BulletMoveWay.Throw,
+                                false
+                            );
+
+                            bullet.Vx = trajectory[1];
+                            bullet.Vy = trajectory[2];
+                            bullet.detaVy = -trajectory[3];
+                            bullet.targetPlant = umbrellaPlant;
+                            bullet.Damage = __instance.attackDamage;
+                            bullet.fromType = __instance.thePlantType;
+                        }
+                    }
+                }
+                else
+                {
+                    // 没有雨伞叶保护，直接瞄准僵尸
+                    foreach (var zombie in targetZombies)
+                    {
+                        float offsetX = startX + UnityEngine.Random.Range(-0.3f, 0.3f);
+                        float offsetY = startY + UnityEngine.Random.Range(-0.3f, 0.3f);
+
+                        Vector2 zombieVel = zombie.Velocity;
+                        Vector2 zombiePos = zombie.ColliderPosition;
+
+                        float[] trajectory = Lawnf.CalculateProjectileWithSpeed(
+                            new Vector2(offsetX, offsetY),
+                            zombieVel,
+                            zombiePos,
+                            __instance.flightTime
+                        );
+
+                        Bullet bullet = CreateBullet.Instance.SetBullet(
+                            offsetX,
+                            offsetY,
+                            zombie.theZombieRow,
+                            UltimateWinterCabbagecannon.BulletID,
+                            BulletMoveWay.Throw,
+                            false
+                        );
+
+                        bullet.Vx = trajectory[1];
+                        bullet.Vy = trajectory[2];
+                        bullet.detaVy = -trajectory[3];
+                        bullet.targetPlant = umbrellaPlant;
+                        bullet.Damage = __instance.attackDamage;
+                        bullet.fromType = __instance.thePlantType;
+                    }
+                }
+                if (UnityEngine.Random.Range(0, 100) < 5 && __instance.attributeCountdown <= 0f)
+                    __instance.anim.SetTrigger("super");
+                // 播放射击音效
+                float pitch = UnityEngine.Random.Range(0.9f, 1.2f);
+                GameAPP.PlaySound(145, 0.5f, pitch);
+
                 return false;
             }
-            return true;
+            catch
+            {
+                return true;
+            }
         }
     }
 
@@ -253,12 +394,11 @@ namespace UltimateWinterCabbagecannon.BepInEx
             {
                 if (zombie != null)
                 {
-                    var cherry = CreateParticle.SetParticle((int)UltimateWinterCabbagecannon.ParticleID, __instance.transform.position, 11).GetComponent<BombCherry>();
-                    cherry.OnStart(__instance.transform.position);
+                    var cherry = CoreTools.CreateCherryExplode(__instance.transform.position, __instance.theBulletRow, UltimateWinterCabbagecannon.BombID, immediately: false, shake: false, volume: 0.2f).Item1;
                     int damage = __instance.Damage;
                     if (Lawnf.TravelUltimate((UltiBuff)14))
                         damage *= 4;
-                    cherry.explodeDamage = damage;
+                    cherry.damageToZombie = damage;
                     cherry.bombRow = __instance.theBulletRow;
                     cherry.bombType = CherryBombType.Custom;
                     cherry.range = 1f;
@@ -278,6 +418,7 @@ namespace UltimateWinterCabbagecannon.BepInEx
                         }
                     };
                     cherry.zombieAction = action;
+                    cherry.Explode();
                     __instance.Die();
                 }
                 return false;
@@ -291,11 +432,11 @@ namespace UltimateWinterCabbagecannon.BepInEx
         {
             if (__instance.theBulletType == UltimateWinterCabbagecannon.BulletID)
             {
-                var cherry = CreateParticle.SetParticle((int)UltimateWinterCabbagecannon.ParticleID, __instance.transform.position, 11).GetComponent<BombCherry>();
+                var cherry = CoreTools.CreateCherryExplode(__instance.transform.position, __instance.theBulletRow, UltimateWinterCabbagecannon.BombID, immediately: false, shake: false, volume: 0.2f).Item1;
                 int damage = __instance.Damage;
                 if (Lawnf.TravelUltimate((UltiBuff)14))
                     damage *= 4;
-                cherry.explodeDamage = damage;
+                cherry.damageToZombie = damage;
                 cherry.bombRow = __instance.theBulletRow;
                 cherry.bombType = CherryBombType.IceCharry;
                 cherry.range = 1f;
@@ -311,6 +452,7 @@ namespace UltimateWinterCabbagecannon.BepInEx
                         z.TakeDamage(DmgType.NormalAll, damage, __instance.fromType);
                 };
                 cherry.zombieAction = action;
+                cherry.Explode();
                 __instance.Die();
                 return false;
             }

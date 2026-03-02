@@ -321,10 +321,6 @@
 	<ItemGroup>
 	  <EmbeddedResource Include="obsidianthreegatling" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\CustomizeLib.MelonLoader\CustomizeLib.MelonLoader.csproj" />
-	</ItemGroup>
 	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="COPY &quot;$(TargetPath)&quot; &quot;..\..\res\MelonLoader\Mods&quot;" />

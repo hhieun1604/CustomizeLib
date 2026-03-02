@@ -175,6 +175,7 @@ namespace UltimateWinterMelonBepInEx
                                 // bullet.theStatus = BulletStatus.Melon_cannon;
                                 bullet.Damage = Lawnf.TravelAdvanced(Buff2) ? plant.attackDamage * 2 : plant.attackDamage;
                                 bullet.from = plant;
+                                bullet.fromType = plant.thePlantType;
                             }
                             attackCount--;
                             attack = true;

@@ -270,18 +270,23 @@ namespace IceDoomSniperPea.BepInEx
                         if (z.freezeTimer > 0f)
                             z.TakeDamage(DmgType.Normal, dmg * 3);
                     };
-                    Board.Instance.CreateCherryExplode(transform.position, zombie.theZombieRow, CherryBombType.IceCharry, dmg, action: action);
+                    Board.Instance.CreateCherryExplode(transform.position, zombie.theZombieRow, CherryBombType.IceCharry, dmg, action: action, fromType: (PlantType)IceDoomSniperPea.PlantID);
                     int totalHealth = zombie.theHealth + zombie.theFirstArmorHealth + zombie.theSecondArmorHealth;
                     if (Utils.TravelCustomBuffLevel(BuffType.AdvancedBuff, (int)IceDoomSniperPea.buff1) == 2)
                     {
                         int damage = zombie.GetDamage((int)(totalHealth * 0.1f) + 1, DmgType.Normal, false);
-                        zombie.theHealth -= damage;
-                        zombie.theFirstArmorHealth -= damage;
-                        zombie.theSecondArmorHealth -= damage;
-                        UpdateHealth(zombie);
+                        if (zombie.theZombieType == ZombieType.TrainingDummy)
+                        {
+                            zombie.theHealth -= damage;
+                            zombie.theFirstArmorHealth -= damage;
+                            zombie.theSecondArmorHealth -= damage;
+                            UpdateHealth(zombie);
+                        }
+                        else
+                            zombie.TakeDamage(DmgType.IceAll, damage, (PlantType)IceDoomSniperPea.PlantID);
                     }
                     else
-                        zombie.TakeDamage(DmgType.Normal, (int)(totalHealth * 0.05f) + 1);
+                        zombie.TakeDamage(DmgType.Normal, (int)(totalHealth * 0.05f) + 1, (PlantType)IceDoomSniperPea.PlantID);
                 }
                 if (Lawnf.TravelAdvanced(IceDoomSniperPea.buff1))
                     Diffusion();
@@ -330,7 +335,7 @@ namespace IceDoomSniperPea.BepInEx
                 z.SetCold(10f);
                 z.AddfreezeLevel(50);
                 if (z.freezeTimer > 0f)
-                    z.TakeDamage(DmgType.Normal, dmg * 3);
+                    z.TakeDamage(DmgType.Normal, dmg * 3, (PlantType)IceDoomSniperPea.PlantID);
             };
 
             Board board = Board.Instance;
@@ -345,13 +350,18 @@ namespace IceDoomSniperPea.BepInEx
             if (Utils.TravelCustomBuffLevel(BuffType.AdvancedBuff, (int)IceDoomSniperPea.buff1) == 2)
             {
                 int damage = zombie.GetDamage((int)(totalHealth * 0.1f) + 1, DmgType.Normal, false);
-                zombie.theHealth -= damage;
-                zombie.theFirstArmorHealth -= damage;
-                zombie.theSecondArmorHealth -= damage;
-                UpdateHealth(zombie);
+                if (zombie.theZombieType == ZombieType.TrainingDummy)
+                {
+                    zombie.theHealth -= damage;
+                    zombie.theFirstArmorHealth -= damage;
+                    zombie.theSecondArmorHealth -= damage;
+                    UpdateHealth(zombie);
+                }
+                else
+                    zombie.TakeDamage(DmgType.IceAll, damage, (PlantType)IceDoomSniperPea.PlantID);
             }
             else
-                zombie.TakeDamage(DmgType.Normal, (int)(totalHealth * 0.05f) + 1);
+                zombie.TakeDamage(DmgType.Normal, (int)(totalHealth * 0.05f) + 1, (PlantType)IceDoomSniperPea.PlantID);
 
             bool iceDoom = false;
 
@@ -366,7 +376,7 @@ namespace IceDoomSniperPea.BepInEx
                 }
                 else
                     zombie.TakeDamage(DmgType.MaxDamage, int.MaxValue);
-                board.SetDoom(0, 0, false, true, zombie.axis.transform.position, (Lawnf.TravelAdvanced(IceDoomSniperPea.buff1) ? 21600 : 7200));
+                board.SetDoom(0, 0, false, true, zombie.axis.transform.position, (Lawnf.TravelAdvanced(IceDoomSniperPea.buff1) ? 21600 : 7200), fromType: (PlantType)IceDoomSniperPea.PlantID);
                 iceDoom = true;
             }
 
@@ -382,9 +392,9 @@ namespace IceDoomSniperPea.BepInEx
                         UpdateHealth(zombie);
                     }
                     else
-                        zombie.TakeDamage(DmgType.MaxDamage, int.MaxValue);
+                        zombie.TakeDamage(DmgType.MaxDamage, int.MaxValue, (PlantType)IceDoomSniperPea.PlantID);
                 }
-                board.SetDoom(0, 0, false, true, zombie.axis.transform.position, (Lawnf.TravelAdvanced(IceDoomSniperPea.buff1) ? 21600 : 7200));
+                board.SetDoom(0, 0, false, true, zombie.axis.transform.position, (Lawnf.TravelAdvanced(IceDoomSniperPea.buff1) ? 21600 : 7200), fromType: (PlantType)IceDoomSniperPea.PlantID);
                 iceDoom = true;
             }
 

@@ -315,10 +315,6 @@
 	<ItemGroup>
 	  <EmbeddedResource Include="icedoomsniperpea" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\..\CustomizeLib.MelonLoader\CustomizeLib.MelonLoader.csproj" />
-	</ItemGroup>
 	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="COPY &quot;$(TargetPath)&quot; &quot;F:\vsrepos\Customizelib\res\MelonLoader\Mods&quot;" />

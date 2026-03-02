@@ -105,32 +105,28 @@ namespace PuffUltimateChomper.BepInEx
                 if (zombie == null)
                     return false;
 
-                if (__instance.attributeCountdown == 0.0f)
+                var zombieType = zombie.theZombieType;
+                if (__instance.attributeCountdown == 0.0f && !TypeMgr.IsBossZombie(zombieType) && !TypeMgr.IsGargantuar(zombieType))
                 {
-                    var zombieType = zombie.theZombieType;
+                    zombie.Die(2);
 
-                    if (!TypeMgr.IsBossZombie(zombieType) && !TypeMgr.IsGargantuar(zombieType))
-                    {
-                        zombie.Die(2);
+                    if (Lawnf.TravelUltimate((UltiBuff)1))
+                        __instance.attributeCountdown = 15.0f;
+                    else
+                        __instance.attributeCountdown = 40.0f;
 
-                        if (Lawnf.TravelUltimate((UltiBuff)1))
-                            __instance.attributeCountdown = 15.0f;
-                        else
-                            __instance.attributeCountdown = 40.0f;
+                    if (__instance.attributeCount < 485)
+                        __instance.attributeCount++;
 
-                        if (__instance.attributeCount < 485)
-                            __instance.attributeCount++;
+                    __instance.Recover(__instance.thePlantMaxHealth);
 
-                        __instance.Recover(__instance.thePlantMaxHealth);
+                    __instance.chomperUndead = true;
+                    __instance.undeadTimer = 0;
 
-                        __instance.chomperUndead = true;
-                        __instance.undeadTimer = 0;
+                    GameAPP.PlaySound(49, 0.5f, 1.0f);
 
-                        GameAPP.PlaySound(49, 0.5f, 1.0f);
-
-                        if (__instance.starUp && __instance.anim != null)
-                            __instance.anim.SetTrigger("supershoot");
-                    }
+                    if (__instance.starUp && __instance.anim != null)
+                        __instance.anim.SetTrigger("supershoot");
                 }
                 else
                 {
@@ -139,13 +135,12 @@ namespace PuffUltimateChomper.BepInEx
                         (__instance.attackDamage * 0.001f) * zombie.TotalFirstHealth *
                          (1.5f + __instance.attributeCount * 0.2f) * 0.01f;
 
-                    if (Lawnf.TravelAdvanced((AdvBuff)62))
+                    if (Lawnf.TravelAdvanced(CoreTools.GetAdvBuffByString("Rogue_究极樱桃战神专精II")))
                         totalDamage *= 1.5f;
 
                     zombie.TakeDamage(DmgType.NormalAll, (int)totalDamage, __instance.thePlantType);
 
                     __instance.Recover(__instance.thePlantMaxHealth);
-
                     GameAPP.PlaySound(49, 0.5f, 1.0f);
                 }
                 return false;
@@ -173,8 +168,8 @@ namespace PuffUltimateChomper.BepInEx
         {
             if (__instance.thePlantType == PuffUltimateChomper.PlantID)
             {
-                __instance.range = new Vector2(0.75f, 0.75f);
-                __instance.centerOffset = new Vector2(1f, 0.5f);
+                __instance.range = new Vector2(2f, 1.25f);
+                __instance.centerOffset = new Vector2(1.85f, 0.5f);
             }
         }
     }

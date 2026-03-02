@@ -3,7 +3,6 @@ using BepInEx.Unity.IL2CPP;
 using BepInEx.Unity.IL2CPP.Utils;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
-using SubspeciesEntry.BepInEx.Buff;
 using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
@@ -14,23 +13,26 @@ using Debug = UnityEngine.Debug;
 namespace SubspeciesEntry.BepInEx
 {
     [BepInPlugin("salmon.subspeciesentry", "Subspecies Entry", "1.0")]
-    public class Core : BasePlugin
+    public class Plugin : BasePlugin
     {
         public override void Load()
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), null);
-            TextCore.Load();
-            BuffCore.Load();
+            CoreTools.Init();
+            Core.Load();
+            TypeInit.Init();
         }
     }
 
-    public static class TextCore
+    public static class Core
     {
         public static void Load()
         {
             InitBuffText();
             InitAlmanacText();
+            InitCardClick();
+            InitDataExtra();
         }
 
         public static void InitBuffText()
@@ -38,14 +40,14 @@ namespace SubspeciesEntry.BepInEx
             #region 大帝伴侣
             {
                 // 流星雨
-                ReplaceText.ReplaceBuff(BuffType.UltimateBuff, 8,
+                ReplaceText.ReplaceBuff(BuffType.UltimateBuff, (int)CoreTools.GetUltiBuffByString("流星雨"),
                     "流星雨：究极杨桃大帝的攻击间隔降低至0.5秒", "流星雨：究极杨桃大帝的攻击间隔降低至0.5秒；亚种五叶草回旋加速降至0.5秒，吸引范围+50%");
                 // 众星之力
-                ReplaceText.ReplaceBuff(BuffType.UltimateBuff, 9,
+                ReplaceText.ReplaceBuff(BuffType.UltimateBuff, (int)CoreTools.GetUltiBuffByString("众星之力"),
                     "众星之力：究极杨桃大帝的子弹伤害x2（2级时x3），但发射时不会超过3000（2级时无上限）",
-                    "众星之力：究极杨桃大帝的子弹伤害x2，伤害上限增至3000；亚种究极五叶草子弹伤害x2。2级时，究极杨桃大帝伤害x3，取消伤害上限；亚种究极五叶草伤害x3，取消储存上限");
+                    "众星之力：究极杨桃大帝的子弹伤害x2，伤害上限增至3000；亚种五叶草子弹伤害x2。2级时，究极杨桃大帝伤害x3，取消伤害上限；亚种五叶草伤害x3，取消储存上限");
                 // 斗转星移
-                ReplaceText.ReplaceBuff(BuffType.AdvancedBuff, 19,
+                ReplaceText.ReplaceBuff(BuffType.AdvancedBuff, (int)CoreTools.GetAdvBuffByString("斗转星移"),
                     "斗转星移：所有的流星冷却缩短为原来的1/2，且场上每多一个究极杨桃大帝则提升300基础伤害",
                     "斗转星移：所有流星冷却缩短为原来的1/2，所有五叶草储存上限+50%，且场上每多一个究极杨桃大帝则提升300基础伤害，五叶草增加10储存上限");
             }
@@ -53,11 +55,11 @@ namespace SubspeciesEntry.BepInEx
             #region 金蛋
             {
                 // 无尽贪婪
-                ReplaceText.ReplaceBuff(BuffType.UltimateBuff, 30,
+                ReplaceText.ReplaceBuff(BuffType.UltimateBuff, (int)CoreTools.GetUltiBuffByString("无尽贪婪"),
                     "无尽贪婪：究极超时空玉米的黑洞可以吸引一切子弹",
                     "无尽贪婪：究极超时空玉米的黑洞可以吸引一切子弹；亚种超时空坚果每30秒立即回溯一次并回复2000韧性");
                 // 万劫不复
-                ReplaceText.ReplaceBuff(BuffType.UltimateBuff, 31,
+                ReplaceText.ReplaceBuff(BuffType.UltimateBuff, (int)CoreTools.GetUltiBuffByString("万劫不复"),
                     "万劫不复：究极超时空玉米的黑洞吸引子弹的范围大幅增加",
                     "万劫不复：究极超时空玉米的黑洞吸引子弹的范围大幅增加；亚种超时空坚果每次回溯都会净化自身状态");
             }
@@ -65,13 +67,25 @@ namespace SubspeciesEntry.BepInEx
             #region 血月÷子
             {
                 // 金光闪闪
-                ReplaceText.ReplaceBuff(BuffType.UltimateBuff, 22,
+                ReplaceText.ReplaceBuff(BuffType.UltimateBuff, (int)CoreTools.GetUltiBuffByString("金光闪闪"),
                     "金光闪闪：太阳神发射子弹时，消耗超过15000部分的阳光的0.5%，使子弹增加消耗阳光数20倍的伤害，亚种月亮神子弹的光照等级增伤×3",
                     "金光闪闪：太阳神发射子弹时，消耗超过15000部分的阳光的0.5%，使子弹增加消耗阳光数20倍的伤害，亚种月亮神子弹的光照等级增伤×3；变种血月神的子弹的光照等级增伤x3，前20级光照等级，每级血月额外提供僵尸的增益提升50%");
                 // 人造太阳
-                ReplaceText.ReplaceBuff(BuffType.UltimateBuff, 23,
+                ReplaceText.ReplaceBuff(BuffType.UltimateBuff, (int)CoreTools.GetUltiBuffByString("人造太阳"),
                     "人造太阳：太阳神卷心菜召唤的小太阳伤害x3，亚种月亮神卷心菜召唤的明月治疗量×3",
                     "人造太阳：太阳神卷心菜召唤的小太阳伤害x3，亚种月亮神卷心菜召唤的明月治疗量×3；变种血月神卷心菜召唤的血月持续时间x3，且召唤时间减至5秒");
+            }
+            #endregion
+            #region 曾哥&牢灯
+            {
+                // 万籁俱寂
+                ReplaceText.ReplaceBuff(BuffType.UltimateBuff, (int)CoreTools.GetUltiBuffByString("万籁俱寂"),
+                    "万籁俱寂：究极忧郁菇亡语伤害增加到100万，亚种究极路灯花亡语提供的光照等级×3",
+                    "万籁俱寂：究极忧郁菇死亡时或对其使用毁灭菇卡片时，造成1000万伤害并额外造成0.5倍韧性的伤害；亚种路灯花为全场提供的光照x3，并使全场目标的冻结值上限降至100");
+                // 以爆制爆
+                ReplaceText.ReplaceBuff(BuffType.UltimateBuff, (int)CoreTools.GetUltiBuffByString("以爆制爆"),
+                    "以爆制爆：究极忧郁菇及亚种免疫非物理爆炸，每吸收10000点爆炸伤害将释放毁灭菇爆炸",
+                    "以爆制爆：究极忧郁菇及亚种免疫非物理爆炸，每吸收或受到10000点伤害，释放一次（累计吸收伤害/3.8）伤害的毁灭菇效果，不留坑洞");
             }
             #endregion
         }
@@ -82,7 +96,7 @@ namespace SubspeciesEntry.BepInEx
             {
                 ReplaceText.ReplaceAlmanac(PlantType.UltimateStar,
                     "子弹伤害×2，伤害上限增至3000。2级，子弹伤害×3，取消伤害上限",
-                "子弹伤害x2，伤害上限增至3000；亚种究极五叶草子弹伤害x2。2级时，伤害x3，取消伤害上限；亚种究极五叶草伤害x3，取消储存上限");
+                "子弹伤害x2，伤害上限增至3000；亚种五叶草子弹伤害x2。2级时，伤害x3，取消伤害上限；亚种五叶草伤害x3，取消储存上限");
                 ReplaceText.ReplaceAlmanac(PlantType.UltimateStar,
                     "攻击间隔降低至0.5秒",
                     "攻击间隔降至0.5秒；亚种五叶草回旋加速降至0.5秒，吸引范围+50%");
@@ -106,6 +120,46 @@ namespace SubspeciesEntry.BepInEx
                 ReplaceText.ReplaceAlmanac(PlantType.UltimateCabbage,
                     "太阳伤害×3\n月亮回血×3",
                     "太阳伤害x3\n月亮回血x3\n血月持续时间x3，且召唤时间减至5秒");
+            }
+            #endregion
+            #region 曾哥&牢灯
+            {
+                // 万籁俱寂
+                ReplaceText.ReplaceAlmanac(PlantType.UltimateGloom,
+                    "究极忧郁菇死亡时造成的伤害增至100万，究极路灯花死亡时为全场提供的光照级数×3",
+                    "究极忧郁菇死亡时或对其使用毁灭菇卡片时，造成1000万伤害并额外造成0.5倍韧性的伤害；亚种路灯花为全场提供的光照x3，并使全场目标的冻结值上限降至100");
+                // 以爆制爆
+                ReplaceText.ReplaceAlmanac(PlantType.UltimateGloom,
+                    "免疫非物理爆炸，每吸收10000点伤害释放毁灭菇效果（不留坑洞）",
+                    "究极忧郁菇及亚种免疫非物理爆炸，每吸收或受到10000点伤害，释放一次（累计吸收伤害/3.8）伤害的毁灭菇效果，不留坑洞");
+            }
+            #endregion
+        }
+
+        public static void InitCardClick()
+        {
+            #region 曾哥&牢灯
+            {
+                CardClickMgr.AddCardClickOnPlant(PlantType.DoomShroom, PlantType.UltimateGloom, (plant) =>
+                {
+                    plant.GetComponent<IceDoomGloom>().DieEvent();
+                }, () => CoreTools.TravelUltimate("万籁俱寂"));
+                CardClickMgr.AddCardClickOnPlant(PlantType.DoomShroom, PlantType.UltimatePlantern, (plant) =>
+                {
+                    plant.GetComponent<UltimatePlantern>().DieEvent();
+                }, () => CoreTools.TravelUltimate("万籁俱寂"));
+            }
+            #endregion
+        }
+
+        public static void InitDataExtra()
+        {
+            #region 曾哥&牢灯
+            {
+                PlantDataMenuExtra.AddExtra(PlantType.UltimateGloom, "储存伤害：{0}", () => CoreTools.TravelUltimate("以爆制爆"),
+                    (p) => p.GetOrAddComponent<DataSave>().GetData<int>("UltimateGloom_TotalDamage"));
+                PlantDataMenuExtra.AddExtra(PlantType.UltimatePlantern, "储存伤害：{0}", () => CoreTools.TravelUltimate("以爆制爆"),
+                    (p) => p.GetOrAddComponent<DataSave>().GetData<int>("UltimatePlantern_TotalDamage"));
             }
             #endregion
         }
@@ -164,10 +218,10 @@ namespace SubspeciesEntry.BepInEx
                 switch (type)
                 {
                     case BuffType.AdvancedBuff:
-                        oldStr = TravelMgr.advancedBuffs[index];
+                        oldStr = TravelDictionary.advancedBuffsText[(AdvBuff)index];
                         break;
                     case BuffType.UltimateBuff:
-                        oldStr = TravelMgr.ultimateBuffs[index];
+                        oldStr = TravelDictionary.ultimateBuffsText[(UltiBuff)index];
                         break;
                 }
 
@@ -203,14 +257,34 @@ namespace SubspeciesEntry.BepInEx
                 switch (type)
                 {
                     case BuffType.AdvancedBuff:
-                        TravelMgr.advancedBuffs[index] = str;
+                        TravelDictionary.advancedBuffsText[(AdvBuff)index] = str;
                         break;
                     case BuffType.UltimateBuff:
-                        TravelMgr.ultimateBuffs[index] = str;
+                        TravelDictionary.ultimateBuffsText[(UltiBuff)index] = str;
                         break;
                 }
             }
         }
+    }
+    #endregion
+
+    #region 卡片点击
+    public static class CardClickMgr
+    {
+        public static Dictionary<(PlantType, PlantType), (Func<bool>, Action<Plant>)> OnCardClick { get; set; } = new();
+
+        public static void AddCardClickOnPlant(PlantType card, PlantType plant, Action<Plant> action, Func<bool> can) =>
+            OnCardClick.Add((card, plant), (can, action));
+    }
+    #endregion
+
+    #region 详细信息额外显示
+    public static class PlantDataMenuExtra
+    {
+        public static Dictionary<PlantType, (string, Func<bool>, Func<Plant, object>)> ExtraData { get; set; } = new();
+
+        public static void AddExtra(PlantType plantType, string format, Func<bool> show, Func<Plant, object> datas) =>
+            ExtraData.Add(plantType, (format, show, datas));
     }
     #endregion
 
@@ -240,11 +314,71 @@ namespace SubspeciesEntry.BepInEx
     [HarmonyPatch(typeof(TravelMgr))]
     public static class TravelMgrPatch
     {
-        [HarmonyPatch(nameof(TravelMgr.Awake))]
+        [HarmonyPatch(nameof(TravelMgr.OnBoardStart))]
         [HarmonyPostfix]
-        public static void PostAwake()
+        public static void PostOnBoardStart()
         {
             ReplaceText.InitBuff();
+        }
+    }
+
+    [HarmonyPatch(typeof(Mouse))]
+    public static class MousePatch
+    {
+        [HarmonyPatch(nameof(Mouse.TryToSetPlantByCard))]
+        [HarmonyPostfix]
+        public static void PostTryToSetPlantByCard(Mouse __instance)
+        {
+            if (__instance.theCardOnMouse != null)
+            {
+                Plant? targetPlant = null;
+                foreach (var plant in Lawnf.Get1x1Plants(__instance.theMouseColumn, __instance.theMouseRow))
+                {
+                    if (plant == null || plant.IsDestroyed() || plant.gameObject == null || plant.gameObject.IsDestroyed()) continue;
+                    if (CardClickMgr.OnCardClick.ContainsKey((__instance.theCardOnMouse.thePlantType, plant.thePlantType)))
+                    {
+                        targetPlant = plant;
+                        break;
+                    }
+                }
+                if (targetPlant == null) return;
+                if (CardClickMgr.OnCardClick[(__instance.theCardOnMouse.thePlantType, targetPlant.thePlantType)].Item1.Invoke())
+                {
+                    CardClickMgr.OnCardClick[(__instance.theCardOnMouse.thePlantType, targetPlant.thePlantType)].Item2.Invoke(targetPlant);
+                    __instance.board.UseSun(__instance.theCardOnMouse.theSeedCost);
+
+                    if (CoreTools.TravelAdvanced("贪婪诅咒"))
+                        __instance.board.UseSun(__instance.board.theSun / 2);
+
+                    __instance.theCardOnMouse.CD = 0f;
+                    __instance.theCardOnMouse.isPickUp = false;
+
+                    UnityEngine.Object.Destroy(__instance.theItemOnMouse);
+                    __instance.ClearItemOnMouse(false);
+                }
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(PlantDataMenu))]
+    public static class PlantDataMenuPatch
+    {
+        [HarmonyPatch(nameof(PlantDataMenu.Start))]
+        [HarmonyPostfix]
+        public static void PostStart(PlantDataMenu __instance)
+        {
+            if (__instance != null && __instance.gameObject != null && !__instance.IsDestroyed() && !__instance.gameObject.IsDestroyed() && 
+                __instance.plant != null && __instance.plant.gameObject != null && !__instance.plant.IsDestroyed() && !__instance.plant.gameObject.IsDestroyed()
+                && PlantDataMenuExtra.ExtraData.ContainsKey(__instance.plant.thePlantType))
+            {
+                var value = PlantDataMenuExtra.ExtraData[__instance.plant.thePlantType];
+                if (value.Item2.Invoke())
+                {
+                    var str = string.Format(value.Item1, value.Item3.Invoke(__instance.plant));
+                    foreach (var text in __instance.infoText)
+                        text.text += str;
+                }
+            }
         }
     }
     #endregion
@@ -257,12 +391,12 @@ namespace SubspeciesEntry.BepInEx
         [HarmonyPrefix]
         public static void PreStarsUpdate(UltimateStarBlover __instance)
         {
-            if (Lawnf.TravelUltimate(8))
+            if (CoreTools.TravelUltimate("流星雨"))
                 __instance.radius = 1.2f;
-            if (Lawnf.TravelUltimate((UltiBuffs)9))
+            if (CoreTools.TravelUltimate("众星之力"))
                 __instance.maxBullets = int.MaxValue;
             if (__instance.starBullets == null) return;
-            if (Lawnf.TravelUltimate((UltiBuffs)8))
+            if (CoreTools.TravelUltimate("流星雨"))
             {
                 for (int i = 0; i < __instance.starBullets.Length; i++)
                 {
@@ -277,7 +411,7 @@ namespace SubspeciesEntry.BepInEx
         [HarmonyPostfix]
         public static void PostStarsUpdate(UltimateStarBlover __instance)
         {
-            if (Lawnf.TravelAdvanced((AdvBuff)19) && !Lawnf.TravelUltimate((UltiBuffs)9))
+            if (CoreTools.TravelUltimate("斗转星移") && CoreTools.TravelUltimate("众星之力"))
             {
                 for (int i = 0; i < __instance.board.plantStatistics.Count; i++)
                 {
@@ -302,9 +436,9 @@ namespace SubspeciesEntry.BepInEx
         {
             if (__instance.thePlantType == PlantType.UltimateBlover)
             {
-                if (Lawnf.TravelUltimate((UltiBuffs)9))
+                if (CoreTools.TravelUltimate("众星之力"))
                 {
-                    starBullet.Damage *= (Lawnf.TravelUltimateLevel(9) == 2) ? 3 : 2;
+                    starBullet.Damage *= (CoreTools.TravelUltimateLevel("众星之力") == 2) ? 3 : 2;
                 }
             }
         }
@@ -340,12 +474,12 @@ namespace SubspeciesEntry.BepInEx
         {
             if (__instance == null) return;
 
-            if (Lawnf.TravelUltimate((UltiBuff)31))
+            if (CoreTools.TravelUltimate("万劫不复"))
             {
                 __instance.StartCoroutine(ClearDebuff(__instance));
             }
         }
-
+        
         public static IEnumerator ClearDebuff(UltimatePortalNut __instance)
         {
             float startTime = Time.time;
@@ -399,6 +533,21 @@ namespace SubspeciesEntry.BepInEx
                                 }
                             }
                         }
+                        foreach (var zombie in Lawnf.GetAllZombies())
+                        {
+                            if (zombie.theZombieType == ZombieType.UltimateHorse)
+                            {
+                                var horse = zombie.GetComponent<UltimateHorse>();
+                                if (horse != null && horse.cursedPlants.Contains(__instance))
+                                {
+                                    if (horse.cursedPlants.Contains(__instance))
+                                    {
+                                        __instance.SetColor(new Color(1f, 0f, 0f, 1f));
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 catch (ArgumentOutOfRangeException) { }
@@ -424,16 +573,31 @@ namespace SubspeciesEntry.BepInEx
         [HarmonyPostfix]
         public static void PostUpdate(Plant __instance)
         {
-            if (__instance.thePlantType == PlantType.UltimatePortalNut && __instance.attributeCountdown - Time.deltaTime <= 0f)
+            if (__instance.thePlantType == PlantType.UltimatePortalNut)
             {
-                if (Lawnf.TravelUltimate((UltiBuffs)30))
+                if (__instance.attributeCountdown - Time.deltaTime <= 0f)
                 {
-                    __instance.GetComponent<UltimatePortalNut>().Revive();
-                    __instance.thePlantHealth += 2000;
-                    __instance.thePlantHealth = Mathf.Min(__instance.thePlantMaxHealth, __instance.thePlantHealth);
-                    __instance.UpdateText();
+                    if (CoreTools.TravelUltimate("无尽贪婪"))
+                    {
+                        __instance.GetComponent<UltimatePortalNut>().Revive();
+                        __instance.thePlantHealth += 2000;
+                        __instance.thePlantHealth = Mathf.Min(__instance.thePlantMaxHealth, __instance.thePlantHealth);
+                        __instance.UpdateText();
+                    }
+                    __instance.attributeCountdown = 30f;
                 }
-                __instance.attributeCountdown = 30f;
+                if (__instance.GetComponent<UltimatePortalNut>().invincibleTimer > 0f)
+                {
+                    var list = __instance.board.GetComponentsInChildren<UltimateHorse>().ToArray();
+                    if (list.Length > 0)
+                    {
+                        foreach (var zombie in list)
+                        {
+                            if (zombie.cursedPlants.Contains(__instance))
+                                __instance.SetColor(new Color(1f, 0f, 0f, 1f));
+                        }
+                    }
+                }
             }
         }
     }
@@ -447,7 +611,7 @@ namespace SubspeciesEntry.BepInEx
         [HarmonyPrefix]
         public static void PreSummonUpdate(Lunar __instance)
         {
-            if (Lawnf.TravelUltimate((UltiBuffs)23))
+            if (CoreTools.TravelUltimate("人造太阳"))
                 __instance.summonTimer -= 2 * Time.deltaTime;
         }
 
@@ -455,7 +619,7 @@ namespace SubspeciesEntry.BepInEx
         [HarmonyPostfix]
         public static void PostInit(Lunar __instance)
         {
-            if (Lawnf.TravelUltimate((UltiBuffs)23))
+            if (CoreTools.TravelUltimate("人造太阳"))
                 __instance.lifeTimer *= 3;
         }
     }
@@ -473,12 +637,101 @@ namespace SubspeciesEntry.BepInEx
                 if (new StackTrace()?.GetFrame(i)?.GetMethod()?.Name == "DMD<Lunar::Update>" && new StackTrace()?.GetFrame(i)?.GetMethod()?.GetParameters().Length == 1)
                     callByUpdate = true;
             }
-            if (Lawnf.TravelUltimate((UltiBuffs)22) && theSeedType == PlantType.UltimateRedLunar && callByUpdate)
+            if (CoreTools.TravelUltimate("金光闪闪") && theSeedType == PlantType.UltimateRedLunar && callByUpdate)
             {
                 var maxLevel = Lawnf.GetAllPlants().ToArray().ToList().Where(plant => plant.thePlantType == PlantType.UltimateRedLunar).Max(plant => plant.currentLightLevel);
                 maxLevel = Mathf.Min(maxLevel, 20);
                 __result += maxLevel;
             }
+        }
+    }
+    #endregion
+
+    #region 曾哥&牢灯
+    // 曾哥part
+    [HarmonyPatch(typeof(IceDoomGloom))]
+    public static class IceDoomGloomPatch
+    {
+        [HarmonyPatch(nameof(IceDoomGloom.DieEvent))]
+        [HarmonyPrefix]
+        public static bool PostDieEvent(IceDoomGloom __instance, Plant.DieReason reason)
+        {
+            if (CoreTools.TravelUltimate("万籁俱寂") && reason != Plant.DieReason.ByMix)
+            {
+                __instance.board.SetDoom(__instance.thePlantColumn, __instance.thePlantRow, false, true, damage: 1000_0000, effect: 3, fromType: __instance.thePlantType);
+                foreach (var zombie in Lawnf.GetAllZombies())
+                {
+                    if (zombie == null || zombie.IsDestroyed() || zombie.gameObject == null || zombie.gameObject.IsDestroyed()) continue;
+                    zombie.TakeDamage(DmgType.Carred, (int)(zombie.CurrentAllHealth * 0.5f), PlantType.UltimateGloom);
+                }
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(nameof(IceDoomGloom.TakeDamage))]
+        [HarmonyPrefix]
+        public static bool PreTakeDamage(IceDoomGloom __instance, ref int damageType, ref int damage)
+        {
+            if (CoreTools.TravelUltimate("以爆制爆"))
+            {
+                __instance.power += damage;
+                var data = __instance.GetOrAddComponent<DataSave>();
+                data.SetData("UltimateGloom_TotalDamage", data.GetData<int>("UltimateGloom_TotalDamage") + damage);
+                if (__instance.power >= 10000)
+                {
+                    __instance.board.SetDoom(__instance.thePlantColumn, __instance.thePlantRow,
+                        false, false, damage: (int)(data.GetData<int>("UltimateGloom_TotalDamage") / 3.8f), fromType: __instance.thePlantType);
+
+                    __instance.power = 0;
+                }
+
+                if ((Plant.DamageType)damageType != Plant.DamageType.Default)
+                    return false;
+            }
+            return true;
+        }
+    }
+
+    // 牢灯part
+    [HarmonyPatch(typeof(UltimatePlantern))]
+    public static class UltimatePlanternPatch
+    {
+        [HarmonyPatch(nameof(UltimatePlantern.DieEvent))]
+        [HarmonyPostfix]
+        public static void PostDieEvent(UltimatePlantern __instance, Plant.DieReason reason)
+        {
+            if (CoreTools.TravelUltimate("万籁俱寂") && reason != Plant.DieReason.ByMix)
+            {
+                foreach (var zombie in Lawnf.GetAllZombies())
+                {
+                    if (zombie == null || zombie.IsDestroyed() || zombie.gameObject == null || zombie.gameObject.IsDestroyed()) continue;
+                    zombie.freezeMaxLevel = 100;
+                }
+            }
+        }
+
+        [HarmonyPatch(nameof(UltimatePlantern.TakeDamage))]
+        [HarmonyPrefix]
+        public static bool PreTakeDamage(UltimatePlantern __instance, ref int damageType, ref int damage)
+        {
+            if (CoreTools.TravelUltimate("以爆制爆"))
+            {
+                __instance.attributeCount += damage;
+                var data = __instance.GetOrAddComponent<DataSave>();
+                data.SetData("UltimatePlantern_TotalDamage", data.GetData<int>("UltimatePlantern_TotalDamage") + damage);
+                if (__instance.attributeCount >= 10000)
+                {
+                    __instance.board.SetDoom(__instance.thePlantColumn, __instance.thePlantRow,
+                        false, false, damage: (int)(data.GetData<int>("UltimatePlantern_TotalDamage") / 3.8f), fromType: __instance.thePlantType);
+
+                    __instance.attributeCount = 0;
+                }
+
+                if ((Plant.DamageType)damageType != Plant.DamageType.Default)
+                    return false;
+            }
+            return true;
         }
     }
     #endregion

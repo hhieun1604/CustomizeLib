@@ -20,7 +20,7 @@ namespace CustomizeLib.BepInEx
             }
             if (Board.Instance != null && !Board.Instance.isIZ)
             {
-                InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid").GetChild(currentPage).gameObject.SetActive(true);
+                InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer").GetChild(currentPage).gameObject.SetActive(true);
             }
             else if (Board.Instance != null && Board.Instance.isIZ)
             {
@@ -35,11 +35,12 @@ namespace CustomizeLib.BepInEx
         {
             //控制台支持中文
             Console.OutputEncoding = Encoding.UTF8;
+            if (MyShowCustomPlantsButton != null) return;
             //用正常植物Button创建二创植物Button
             if (Board.Instance is not null && !Board.Instance.isIZ)
             {
                 MyShowCustomPlantsButton = Instantiate(
-                    Resources.Load<GameObject>("ui/prefabs/InGameUI").transform.FindChild("Bottom/SeedLibrary/ShowNormal")
+                    Resources.Load<GameObject>("ui/prefabs/InGameUI").transform.FindChild("Bottom/SeedLibrary/ShowLawn")
                         .gameObject, InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary"));
                 MyShowCustomPlantsButton.name = "ShowCustom";
                 //设置位置
@@ -47,14 +48,14 @@ namespace CustomizeLib.BepInEx
                 MyShowCustomPlantsButton.GetComponent<RectTransform>().position = new Vector3(
                     MyShowCustomPlantsButton.GetComponent<RectTransform>().position.x,
                     MyShowCustomPlantsButton.GetComponent<RectTransform>().position.y,
-                    InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/ShowNormal").position.z);
+                    InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/ShowLawn").position.z);
                 //激活
                 MyShowCustomPlantsButton.SetActive(true);
 
                 //摧毁UIButton组件
-                if (MyShowCustomPlantsButton.GetComponent<UIButton>() != null)
+                if (MyShowCustomPlantsButton.GetComponent<InGameBtn>() != null)
                 {
-                    Destroy(MyShowCustomPlantsButton.GetComponent<UIButton>());
+                    Destroy(MyShowCustomPlantsButton.GetComponent<InGameBtn>());
                     MyShowCustomPlantsButton.AddComponent<SelectCustomPlants>();
                 }
 
@@ -75,6 +76,7 @@ namespace CustomizeLib.BepInEx
         {
             //控制台支持中文
             Console.OutputEncoding = Encoding.UTF8;
+            if (MyShowCustomPlantsButton != null) return;
             //用正常植物Button创建二创植物Button
             if (Board.Instance is not null && Board.Instance.isIZ)
             {
@@ -117,10 +119,10 @@ namespace CustomizeLib.BepInEx
             if (Board.Instance != null && !Board.Instance.isIZ)
             {
                 for (int i = 0; i < 5; i++)
-                    if (InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid").GetChild(i).gameObject.activeSelf)
+                    if (InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer").GetChild(i).gameObject.activeSelf)
                     {
                         currentPage = i;
-                        InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid").GetChild(i).gameObject.SetActive(false);
+                        InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer").GetChild(i).gameObject.SetActive(false);
                         break;
                     }
             }
@@ -146,9 +148,9 @@ namespace CustomizeLib.BepInEx
                 if (Board.Instance != null && !Board.Instance.isIZ)
                 {
                     MyPageParent = Instantiate(
-                        InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/ColorfulCards")
+                        InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer/ColorfulCards")
                             .gameObject
-                            .gameObject, InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid"));
+                            .gameObject, InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer"));
                     MyPageParent.gameObject.SetActive(true);
                     MyPage = MyPageParent.transform.GetChild(0).gameObject;
                     MyPage.gameObject.SetActive(true);
