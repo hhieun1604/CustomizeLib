@@ -773,7 +773,7 @@ namespace CustomizeLib.BepInEx
             if (Board.Instance is not null && !Board.Instance.isIZ)
             {
                 GameObject? MyCard = null;
-                MyCard = InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer/ColorfulCards/Page1/CattailGirl").gameObject;
+                MyCard = InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/ColorfulCards/Page1/CattailGirl").gameObject;
                 #region disable
                 /*int value = 0;
                 GameObject? MyPage = null;
@@ -826,7 +826,7 @@ namespace CustomizeLib.BepInEx
             if (Board.Instance is not null && !Board.Instance.isIZ)
             {
                 GameObject? MyCard = null;
-                MyCard = InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer/NormalCards/Page1/PeaShooter").gameObject;
+                MyCard = InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/NormalCards/Page1/PeaShooter").gameObject;
                 return MyCard;
             }
             else if (Board.Instance is not null && Board.Instance.isIZ)
@@ -846,7 +846,7 @@ namespace CustomizeLib.BepInEx
         {
             if (Board.Instance != null && !Board.Instance.isIZ)
             {
-                return InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer/ColorfulCards/Page1");
+                return InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/ColorfulCards/Page1");
             }
             else if (Board.Instance != null && Board.Instance.isIZ)
             {
@@ -859,11 +859,11 @@ namespace CustomizeLib.BepInEx
         {
             if (Board.Instance != null && Board.Instance.boardTag.isTowerDefence)
             {
-                return InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer/TowerCard/Page1");
+                return InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/TowerCard/Page1");
             }
             else if (Board.Instance != null && !Board.Instance.isIZ)
             {
-                return InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer/Pages/Page1");
+                return InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/Pages/Page1");
             }
             else if (Board.Instance != null && Board.Instance.isIZ)
             {

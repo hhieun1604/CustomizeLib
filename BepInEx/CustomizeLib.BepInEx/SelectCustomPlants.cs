@@ -20,7 +20,7 @@ namespace CustomizeLib.BepInEx
             }
             if (Board.Instance != null && !Board.Instance.isIZ)
             {
-                InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer").GetChild(currentPage).gameObject.SetActive(true);
+                InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid").GetChild(currentPage).gameObject.SetActive(true);
             }
             else if (Board.Instance != null && Board.Instance.isIZ)
             {
@@ -119,10 +119,10 @@ namespace CustomizeLib.BepInEx
             if (Board.Instance != null && !Board.Instance.isIZ)
             {
                 for (int i = 0; i < 5; i++)
-                    if (InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer").GetChild(i).gameObject.activeSelf)
+                    if (InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid").GetChild(i).gameObject.activeSelf)
                     {
                         currentPage = i;
-                        InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer").GetChild(i).gameObject.SetActive(false);
+                        InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid").GetChild(i).gameObject.SetActive(false);
                         break;
                     }
             }
@@ -148,9 +148,9 @@ namespace CustomizeLib.BepInEx
                 if (Board.Instance != null && !Board.Instance.isIZ)
                 {
                     MyPageParent = Instantiate(
-                        InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer/ColorfulCards")
+                        InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/ColorfulCards")
                             .gameObject
-                            .gameObject, InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid/CardPagesContainer"));
+                            .gameObject, InGameUI.Instance.SeedBank.transform.parent.FindChild("Bottom/SeedLibrary/Grid"));
                     MyPageParent.gameObject.SetActive(true);
                     MyPage = MyPageParent.transform.GetChild(0).gameObject;
                     MyPage.gameObject.SetActive(true);

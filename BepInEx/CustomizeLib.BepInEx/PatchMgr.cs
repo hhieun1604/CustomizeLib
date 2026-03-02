@@ -1341,6 +1341,34 @@ namespace CustomizeLib.BepInEx
                     Il2CppReferenceArray<Sprite> spritePrefab = new Il2CppReferenceArray<Sprite>(size_spritePrefab + 1);
                     GameAPP.spritePrefab = spritePrefab;
                 }
+
+                // 扩容data融合数组
+                if (CustomCore.CustomPlants.Count > 0 && ((long)CustomCore.CustomPlants.Keys.DefaultIfEmpty().Max() + 1 >= MixData.data.Cast<Il2CppSystem.Array>().GetLongLength(0) || (long)CustomCore.CustomPlants.Keys.Max() + 1 >= MixData.data.Cast<Il2CppSystem.Array>().GetLongLength(1)))
+                {
+                    var arr = MixData.data.Cast<Il2CppSystem.Array>();
+                    long max = (long)CustomCore.CustomPlants.Keys.DefaultIfEmpty().Max() + 1;
+                    var type = arr.GetValue(0, 0).GetIl2CppType();
+                    var result = Il2CppSystem.Array.CreateInstance(type, max, max);
+                    MixData.data = result;
+                }
+
+                // 扩容disMixDatas拆分数组
+                if (CustomCore.CustomPlants.Count > 0 && (int)CustomCore.CustomPlants.Keys.DefaultIfEmpty().Max() + 1 >= MixData.disMixDatas.Length)
+                {
+                    long size_disMixDatas = (int)CustomCore.CustomPlants.Keys.DefaultIfEmpty().Max();
+                    Il2CppReferenceArray<MixData.DisMixData> disMixDatas = new Il2CppReferenceArray<MixData.DisMixData>(size_disMixDatas + 1);
+                    MixData.disMixDatas = disMixDatas;
+                }
+
+                // 扩容randomData随机融合数组
+                if (CustomCore.CustomPlants.Count > 0 && ((long)CustomCore.CustomPlants.Keys.DefaultIfEmpty().Max() + 1 >= MixData.randomData.Cast<Il2CppSystem.Array>().GetLongLength(0) || (long)CustomCore.CustomPlants.Keys.Max() + 1 >= MixData.randomData.Cast<Il2CppSystem.Array>().GetLongLength(1)))
+                {
+                    var arr = MixData.randomData.Cast<Il2CppSystem.Array>();
+                    long max = (int)CustomCore.CustomPlants.Keys.DefaultIfEmpty().Max() + 1;
+                    var type = arr.GetValue(0, 0).GetIl2CppType();
+                    var result = Il2CppSystem.Array.CreateInstance(type, max, max);
+                    MixData.randomData = result;
+                }
                 #endregion
             }
             catch (InvalidOperationException) { }
